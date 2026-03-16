@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <title>二十四节气 - 文化传承</title>
+    <style>
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-weight: normal;
+            font-size: 20px;
+        }
+   body {
+            background: 
+                url("../statics/副背景.png") center/cover no-repeat,
+                linear-gradient(180deg, rgba(250,245,240,0.85), rgba(245,240,235,0.9));
+            background-attachment: fixed;
+            color: #333;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+        /* ========== 隐藏页面滚动条 ========== */
+        html {
+            height: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: transparent !important;
+        }
+        
+        body::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+
+        /* 首屏 Hero 区 */
+        .hero {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: 
+                url("images/副背景.png") center/cover no-repeat,
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(220,200,180,0.02) 2px,
+                    rgba(220,200,180,0.02) 4px
+                );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            color: #444;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #777;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            position: relative;
+            z-index: 2;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 40px;
+            border: 1px solid #999;
+            border-radius: 12px;
+            z-index: 2;
+            opacity: 0.7;
+            animation: breathe 3s infinite ease-in-out;
+            cursor: pointer;
+        }
+
+        .scroll-down::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background-color: #999;
+            border-radius: 2px;
+            animation: scroll 2s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes scroll {
+            0% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, 20px); opacity: 0; }
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 1.5rem 0;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-100%);
+            transition: all 0.5s ease;
+        }
+
+        .navbar.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: #555;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #777;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover {
+            color: #333;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        /* 画卷容器 */
+       .scroll-container {
+        padding: 6rem 2rem 10rem;
+        max-width: auto;
+        margin: 0 auto;
+        position: relative;
+        backdrop-filter: blur(10px); /* 毛玻璃效果，增强质感 */
+        -webkit-backdrop-filter: blur(10px);
+        
+        /* 与 Hero 区域的分界线 */
+        border-top: 1px solid rgba(248, 247, 246, 0.2);
+        box-shadow: 0 -10px 30px rgba(0,0,0,0.1); /* 向上投影，营造层次感 */
+        border-radius: 20px 20px 0 0; /* 圆角顶部 */
+        
+        /* 确保在 Hero 之上 */
+        z-index: 10;
+        position: relative;
+        margin-top: -1px; /* 略微上移，覆盖 Hero 底部 */
+}
+
+.scroll-container::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    /* 移除原来的背景渐变，改为装饰性边框 */
+    border: 1px solid rgba(200, 190, 180, 0.2);
+    border-bottom: none;
+    border-radius: 20px 20px 0 0;
+    pointer-events: none;
+    z-index: 0;
+}
+
+        .scroll-title {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            color: #444;
+            letter-spacing: 0.1em;
+            margin-bottom: 6rem;
+            text-align: center;
+            position: relative;
+            padding-top: 1.5rem;
+        }
+
+        .scroll-title::before {
+            position: absolute;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 2rem;
+            color: #8a7f72;
+            opacity: 0.3;
+        }
+
+        /* 画卷轨道 */
+        .scroll-track {
+            position: relative;
+            min-height: 600px;
+            padding-left: 4rem;
+        }
+
+        .scroll-track::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 2rem;
+            width: 2px;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                transparent 0%,
+                rgba(180,160,140,0.4) 20%,
+                rgba(180,160,140,0.6) 50%,
+                rgba(180,160,140,0.4) 80%,
+                transparent 100%
+            );
+            z-index: 0;
+        }
+
+        /* 画卷节点 */
+        .scroll-item {
+            position: relative;
+            margin-bottom: 8rem;
+            opacity: 0;
+            transform: translateX(-50px);
+            transition: all 1s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+
+        .scroll-item.visible {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        /* 画卷连接点 */
+        .scroll-dot {
+            position: absolute;
+            top: 2rem;
+            left: -4.5rem;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #fff, #f8f5f2);
+            border: 3px solid #a89985;
+            z-index: 2;
+            transition: all 0.5s ease;
+            box-shadow: 0 4px 12px rgba(168, 153, 133, 0.2);
+        }
+
+        .scroll-item:hover .scroll-dot {
+            transform: scale(1.2);
+            box-shadow: 0 6px 20px rgba(168, 153, 133, 0.4);
+            border-color: #8a7f72;
+        }
+
+        /* 画卷内容 - 书简样式 */
+        .scroll-content {
+            background: linear-gradient(
+                90deg,
+                rgba(255, 250, 240, 0.95) 0%,
+                rgba(255, 248, 235, 0.98) 100%
+            );
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border-radius: 8px 0 8px 8px;
+            padding: 3rem 2.5rem;
+            position: relative;
+            overflow: hidden;
+            min-height: 280px;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.08),
+                0 2px 8px rgba(0,0,0,0.05),
+                inset 1px 0 0 rgba(255,255,255,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+            border: 1px solid rgba(255,255,255,0.3);
+            border-left: 6px solid #a89985;
+            transition: all 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+        }
+
+        /* 书简展开效果 */
+        .scroll-content::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            left: 0;
+            background: 
+                repeating-linear-gradient(
+                    to right,
+                    transparent,
+                    transparent 1px,
+                    rgba(180,160,140,0.05) 1px,
+                    rgba(180,160,140,0.05) 2px
+                ),
+                linear-gradient(
+                    to bottom,
+                    transparent 0%,
+                    rgba(255,255,255,0.3) 50%,
+                    transparent 100%
+                );
+            pointer-events: none;
+            opacity: 0.5;
+            border-radius: 8px 0 8px 8px;
+        }
+
+        /* 书简边缘装饰 */
+        .scroll-content::after {
+            content: "";
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 30px;
+            height: 100%;
+            background: linear-gradient(
+                to left,
+                rgba(180,160,140,0.2) 0%,
+                rgba(180,160,140,0.1) 30%,
+                transparent 100%
+            );
+            border-radius: 0 8px 8px 0;
+        }
+
+        /* 悬停展开效果 */
+        .scroll-content:hover {
+            transform: translateX(20px) scale(1.02);
+            box-shadow: 
+                0 20px 60px rgba(0,0,0,0.15),
+                0 8px 20px rgba(0,0,0,0.1),
+                inset 1px 0 0 rgba(255,255,255,0.6),
+                inset 0 1px 0 rgba(255,255,255,0.6);
+        }
+
+        /* 内容标题 */
+        .content-title {
+            font-size: 2rem;
+            color: #5a4d3e;
+            letter-spacing: 0.08em;
+            margin-bottom: 1.5rem;
+            position: relative;
+            padding-bottom: 0.8rem;
+        }
+
+        .content-title::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, #a89985, transparent);
+            border-radius: 2px;
+        }
+
+        /* 内容文本 */
+        .content-text {
+            font-size: 1.1rem;
+            color: #666;
+            line-height: 1.9;
+            letter-spacing: 0.05em;
+            text-align: justify;
+            position: relative;
+        }
+
+        /* 装饰图标 */
+        .scroll-icon {
+            position: absolute;
+            bottom: 1.5rem;
+            right: 1.5rem;
+            font-size: 3.5rem;
+            color: rgba(168, 153, 133, 0.2);
+            transition: all 0.5s ease;
+            z-index: 1;
+        }
+
+        .scroll-content:hover .scroll-icon {
+            transform: scale(1.1) rotate(5deg);
+            color: rgba(168, 153, 133, 0.3);
+        }
+
+        /* 画卷主题变体 */
+        .scroll-item:nth-child(2) .scroll-content {
+            border-left-color: #9a8c76;
+            background: linear-gradient(
+                90deg,
+                rgba(245, 248, 240, 0.95) 0%,
+                rgba(240, 245, 235, 0.98) 100%
+            );
+        }
+
+        .scroll-item:nth-child(3) .scroll-content {
+            border-left-color: #8a7c66;
+            background: linear-gradient(
+                90deg,
+                rgba(250, 245, 240, 0.95) 0%,
+                rgba(245, 240, 235, 0.98) 100%
+            );
+        }
+
+        .scroll-item:nth-child(4) .scroll-content {
+            border-left-color: #7a6c56;
+            background: linear-gradient(
+                90deg,
+                rgba(240, 245, 250, 0.95) 0%,
+                rgba(235, 240, 245, 0.98) 100%
+            );
+        }
+
+        /* 画卷展开动画 */
+        @keyframes scrollUnroll {
+            0% {
+                transform: scaleX(0.3) translateX(-50px);
+                opacity: 0;
+            }
+            100% {
+                transform: scaleX(1) translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .scroll-item.visible .scroll-content {
+            animation: scrollUnroll 0.8s ease-out forwards;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .scroll-track {
+                padding-left: 2rem;
+            }
+            
+            .scroll-track::before {
+                left: 1rem;
+            }
+            
+            .scroll-dot {
+                left: -2.5rem;
+            }
+            
+            .scroll-content {
+                padding: 2.5rem 2rem;
+            }
+            
+            .navbar {
+                gap: 2rem;
+                padding: 1rem 0;
+            }
+            
+            .hero-title {
+                letter-spacing: 0.1em;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .content-title {
+                font-size: 1.6rem;
+            }
+            
+            .content-text {
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+            
+            .scroll-icon {
+                font-size: 2.5rem;
+                bottom: 1rem;
+                right: 1rem;
+            }
+            
+            .scroll-container {
+                padding: 5rem 1.5rem 8rem;
+            }
+            
+            .scroll-content {
+                padding: 2rem 1.5rem;
+                min-height: 240px;
+            }
+            
+            .scroll-title {
+                font-size: clamp(1.5rem, 5vw, 2.5rem);
+                margin-bottom: 4rem;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .navbar {
+                gap: 1.2rem;
+            }
+            
+            .scroll-track {
+                padding-left: 1.5rem;
+            }
+            
+            .scroll-dot {
+                left: -2rem;
+                width: 20px;
+                height: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 首屏 Hero 区 -->
+    <section class="hero">
+        <h1 class="hero-title">文化传承</h1>
+        <p class="hero-subtitle">画卷展开，文脉绵延</p>
+        <div class="scroll-down"></div>
+    </section>
+
+    <!-- 2. 悬浮导航栏 -->
+    <nav class="navbar">
+        <a onclick="window.location.href='主页面.html'">节气</a>
+        <a onclick="window.location.href='历史渊源.html'">渊源</a>
+        <a onclick="window.location.href='节侯.html'">节侯</a>
+        <a onclick="window.location.href='风物.html'">风物</a>
+        <a onclick="window.location.href='问答.html'">问答</a>
+        <a onclick="window.location.href='传承.html'">传承</a>
+    </nav>
+
+    <!-- 3. 画卷式传承内容 -->
+    <section class="scroll-container">
+        <h2 class="scroll-title">价值与传承</h2>
+        
+        <div class="scroll-track">
+            <!-- 精神价值 -->
+            <div class="scroll-item">
+                <div class="scroll-dot"></div>
+                <div class="scroll-content">
+                    <i class="fas fa-heart scroll-icon"></i>
+                    <h3 class="content-title">精神价值</h3>
+                    <p class="content-text">二十四节气是中华优秀传统文化重要载体，承载着中华民族的精神追求，是独特的精神标识。相关民俗与节日，寄托着人们对美好生活的向往，凝聚着勤劳向善、崇尚自然的精神财富。</p>
+                </div>
+            </div>
+            
+            <!-- 实际价值 -->
+            <div class="scroll-item">
+                <div class="scroll-dot"></div>
+                <div class="scroll-content">
+                    <i class="fas fa-leaf scroll-icon"></i>
+                    <h3 class="content-title">实际价值</h3>
+                    <p class="content-text">作为世界级非物质文化遗产，涵盖谚语、民俗、技艺等丰富内容。如今虽农事指导功能减弱，但仍体现着尊重自然、顺应天时、可持续发展的东方智慧，是人与自然和谐共生的文化见证。</p>
+                </div>
+            </div>
+            
+            <!-- 社会影响 -->
+            <div class="scroll-item">
+                <div class="scroll-dot"></div>
+                <div class="scroll-content">
+                    <i class="fas fa-users scroll-icon"></i>
+                    <h3 class="content-title">社会影响</h3>
+                    <p class="content-text">国内广泛传承，节气民俗与活动持续开展；并传播至日本、韩国、越南等东亚、东南亚国家，影响当地历法、农业与节庆文化，成为中华文明对外交流的重要符号。</p>
+                </div>
+            </div>
+            
+            <!-- 保护传承 -->
+            <div class="scroll-item">
+                <div class="scroll-dot"></div>
+                <div class="scroll-content">
+                    <i class="fas fa-shield-alt scroll-icon"></i>
+                    <h3 class="content-title">保护传承</h3>
+                    <p class="content-text">2006 年列入国家级非遗，2016 年入选联合国非遗名录；先后成立保护联盟与专业研究院，发行节气纪念币，由专业机构规范化保护与传承。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    
+
+    <script>
+        // 滚动显示导航栏
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('show');
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('show');
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 画卷项目滚动动画
+        const scrollItems = document.querySelectorAll('.scroll-item');
+        
+        const scrollObserver = new IntersectionObserver((entries) => {
+            entries.forEach((entry, index) => {
+                if (entry.isIntersecting) {
+                    // 添加延迟动画，实现顺序展开效果
+                    setTimeout(() => {
+                        entry.target.classList.add('visible');
+                    }, index * 300);
+                }
+            });
+        }, {
+            threshold: 0.2,
+            rootMargin: '0px 0px -100px 0px'
+        });
+        
+        // 初始化观察每个画卷项目
+        scrollItems.forEach(item => {
+            scrollObserver.observe(item);
+        });
+
+        // 平滑滚动到内容区域
+        document.querySelector('.scroll-down').addEventListener('click', () => {
+            document.querySelector('.scroll-container').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+
+        // 画卷点击展开效果
+        document.querySelectorAll('.scroll-content').forEach(content => {
+            content.addEventListener('click', function() {
+                this.style.transform = 'translateX(20px) scale(1.02)';
+                setTimeout(() => {
+                    this.style.transform = 'translateX(20px) scale(1.0)';
+                }, 300);
+            });
+            
+            // 键盘可访问性
+            content.setAttribute('tabindex', '0');
+            content.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    this.style.transform = 'translateX(20px) scale(1.02)';
+                    setTimeout(() => {
+                        this.style.transform = 'translateX(20px) scale(1.0)';
+                    }, 300);
+                }
+            });
+        });
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 为画卷项目添加动画延迟
+            scrollItems.forEach((item, index) => {
+                item.style.transitionDelay = `${index * 0.2}s`;
+            });
+            
+            // 添加视差滚动效果
+            window.addEventListener('scroll', () => {
+                const scrolled = window.pageYOffset;
+                
+                // Hero区域背景视差
+                const hero = document.querySelector('.hero');
+                if (hero) {
+                    const heroSpeed = 0.3;
+                    hero.style.backgroundPosition = `center ${scrolled * heroSpeed}px`;
+                }
+                
+                // 画卷项目轻微浮动
+                scrollItems.forEach((item, index) => {
+                    const rect = item.getBoundingClientRect();
+                    const isInView = rect.top < window.innerHeight && rect.bottom > 0;
+                    
+                    if (isInView && item.classList.contains('visible')) {
+                        const floatAmount = Math.sin(scrolled * 0.005 + index) * 3;
+                        item.querySelector('.scroll-content').style.transform = 
+                            `translateX(${20 + floatAmount}px) scale(1.0)`;
+                    }
+                });
+            });
+            
+            // 页面加载动画
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 1s ease-in';
+                document.body.style.opacity = '1';
+                
+                // Hero标题动画
+                const heroTitle = document.querySelector('.hero-title');
+                heroTitle.style.animation = 'none';
+                setTimeout(() => {
+                    heroTitle.style.animation = 'fadeIn 2s ease-out';
+                }, 100);
+            }, 100);
+        });
+
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
