@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <!-- 引入ECharts -->
+    <script src="https://cdn.bootcdn.net/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    <title>二十四节气 - 节侯</title>
+    <style>
+       *{
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-weight: normal;
+            font-size: 20px;
+        }
+
+       body {
+            background: 
+                url("../statics/副背景.png") center/cover no-repeat,
+                linear-gradient(180deg, rgba(250,245,240,0.85), rgba(245,240,235,0.9));
+            background-attachment: fixed;
+            color: #333;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+               /* ========== 隐藏页面滚动条 ========== */
+        html {
+            height: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: transparent !important;
+        }
+        
+        body::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+
+        /* 首屏 Hero 区 */
+        .hero {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: 
+                url("images/副背景.png") center/cover no-repeat,
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(220,200,180,0.02) 2px,
+                    rgba(220,200,180,0.02) 4px
+                );
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            color: #444;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #777;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            position: relative;
+            z-index: 2;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 40px;
+            border: 1px solid #999;
+            border-radius: 12px;
+            z-index: 2;
+            opacity: 0.7;
+            animation: breathe 3s infinite ease-in-out;
+            cursor: pointer;
+        }
+
+        .scroll-down::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background-color: #999;
+            border-radius: 2px;
+            animation: scroll 2s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes scroll {
+            0% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, 20px); opacity: 0; }
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 1.5rem 0;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-100%);
+            transition: all 0.5s ease;
+        }
+
+        .navbar.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: #555;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #777;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover {
+            color: #333;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        .chart-section {
+            padding: 8rem 5vw;
+            max-width: auto;
+            margin: 0 auto;
+            backdrop-filter: blur(10px); /* 毛玻璃效果，增强质感 */
+            -webkit-backdrop-filter: blur(10px);
+        }
+
+        .chart-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: clamp(1.5rem, 3vw, 2.5rem);
+            color: #444;
+            letter-spacing: 0.1em;
+            margin-bottom: 4rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .chart-title::after {
+            content: "";
+            position: absolute;
+            bottom: -1rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 120px;
+            height: 2px;
+        }
+
+        /* 图表容器样式 - 国风美化 */
+        .chart-container {
+            width: 100%;
+            height: 600px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 12px 30px rgba(0,0,0,0.05);
+            border: 1px solid rgba(255,255,255,0.9);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* 图表容器装饰角 - 优化样式 */
+        .chart-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 80px;
+            height: 80px;
+            border-top: 4px solid #d4bfa7;
+            border-left: 4px solid #d4bfa7;
+            opacity: 0.4;
+            border-radius: 12px 0 0 0;
+        }
+
+        .chart-container::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 80px;
+            height: 80px;
+            border-bottom: 4px solid #d4bfa7;
+            border-right: 4px solid #d4bfa7;
+            opacity: 0.4;
+            border-radius: 0 0 12px 0;
+        }
+
+        /* 装饰纹理 */
+        .chart-container .texture {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20v20H0V0zm2 2v16h16V2H2z' fill='none' stroke='%23d4bfa7' stroke-width='0.5' stroke-opacity='0.1'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* 说明文本样式 */
+        .chart-desc {
+            max-width: 1500px;
+            margin: 4rem auto 0;
+            padding: 3rem;
+            background: linear-gradient(135deg, rgba(248,245,240,0.98), rgba(240,235,230,0.95));
+            border-radius: 12px;
+            border: 0.5px solid rgba(225,215,200,0.6);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.03);
+        }
+
+        .chart-desc p {
+            font-size: 1.05rem;
+            color: #555;
+            line-height: 1.9;
+            letter-spacing: 0.05em;
+            text-align: justify;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .hero {
+                height: 60vh;
+            }
+            .hero-title {
+                letter-spacing: 0.1em;
+            }
+            .navbar {
+                gap: 2rem;
+                padding: 1rem 0;
+                flex-wrap: wrap;
+            }
+            .chart-section {
+                padding: 4rem 5vw;
+            }
+            .chart-container {
+                height: 400px;
+                padding: 1.5rem;
+            }
+            .chart-title {
+                margin-bottom: 2rem;
+            }
+            .chart-desc {
+                padding: 1.5rem;
+                margin-top: 2rem;
+            }
+            .chart-desc p {
+                font-size: 1rem;
+                line-height: 1.8;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .chart-container {
+                height: 300px;
+            }
+        }
+         /* 页面右下角数据来源 */
+        .page-data-source {
+            position: fixed; /* 固定在页面右下角，滚动也不消失 */
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999; /* 层级最高，不会被遮挡 */
+            font-family: 'Noto Serif SC', serif;
+            font-size: 14px;
+            color: #baebad;
+            letter-spacing: 0.05em;
+            padding: 5px 10px;
+            border-radius: 4px;
+            border: 1px solid rgba(212,191,167,0.3);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 768px) {
+            .page-data-source {
+                font-size: 12px;
+                bottom: 15px;
+                right: 15px;
+                padding: 4px 8px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 首屏 Hero 区 -->
+    <section class="hero">
+        <h1 class="hero-title">气候物语</h1>
+        <p class="hero-subtitle">节气气候，自然节律</p>
+        <div class="scroll-down"></div>
+    </section>
+
+    <!-- 2. 悬浮导航栏 - 与历史渊源页面一致 -->
+     <nav class="navbar">
+        <a onclick="window.location.href='主页面.html'">节气</a>
+        <a onclick="window.location.href='历史渊源.html'">渊源</a>
+        <a onclick="window.location.href='节侯.html'">节侯</a>
+        <a onclick="window.location.href='风物.html'">风物</a>
+        <a onclick="window.location.href='问答.html'">问答</a>
+        <a onclick="window.location.href='传承.html'">传承</a>
+    </nav>
+
+    <!-- 3. 图表内容区域 -->
+    <section class="chart-section">
+        <h2 class="chart-title">郑州节气·温雨节律图</h2>
+        
+        <!-- ECharts 容器 -->
+        <div id="climate-chart" class="chart-container">
+            <div class="texture"></div>
+        </div>
+        
+        <!-- 图表说明 -->
+        <div class="chart-desc">
+            <p>二十四节气不仅是时间的划分，更是对自然气候规律的总结。从图表中可以清晰看到：降水在夏季的大暑达到峰值，冬季的冬至、小寒降至最低；气温则在夏至到大暑期间达到全年最高，小寒时降至全年最低。这种变化规律充分体现了古人对自然节律的精准把握，也为传统农业生产提供了重要的气候参考。</p>
+        </div>
+    </section>
+
+    <script>
+        // 滚动显示导航栏 - 与历史渊源页面一致
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('show');
+            } else {
+                navbar.classList.remove('show');
+            }
+        });
+
+        // 平滑滚动到锚点
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+
+        // 初始化ECharts图表
+        window.addEventListener('load', function() {
+            // 获取图表容器
+            const chartDom = document.getElementById('climate-chart');
+            const myChart = echarts.init(chartDom);
+            
+            // 图表配置项 - 全面优化样式
+            const option = {
+                // 整体样式适配国风
+                backgroundColor: 'transparent',
+                tooltip: {
+                    trigger: 'axis',
+                    axisPointer: {
+                        type: 'cross',
+                        crossStyle: {
+                            color: '#999',
+                            width: 1,
+                            type: 'dashed'
+                        }
+                    },
+                    textStyle: {
+                        fontFamily: 'Noto Serif SC',
+                        fontSize: 13,
+                        color: '#444'
+                    },
+                    backgroundColor: 'rgba(255,255,255,0.95)',
+                    borderColor: '#d4bfa7',
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    padding: [10, 15],
+                    shadowBlur: 10,
+                    shadowColor: 'rgba(0,0,0,0.1)'
+                },
+                toolbox: {
+                    feature: {
+                        dataView: { 
+                            show: true, 
+                            readOnly: false,
+                            title: '数据视图',
+                            lang: ['数据视图', '关闭', '刷新'],
+                            textStyle: { fontFamily: 'Noto Serif SC', color: '#555' }
+                        },
+                        magicType: { 
+                            show: true, 
+                            type: ['line', 'bar'],
+                            title: { line: '切换为折线图', bar: '切换为柱状图' }
+                        },
+                        restore: { show: true, title: '重置' },
+                        saveAsImage: { show: true, title: '保存图片' }
+                    },
+                    iconStyle: {
+                        borderColor: '#888',
+                        borderWidth: 1,
+                        borderRadius: 4
+                    },
+                    top: 15,
+                    right: 15
+                },
+                legend: {
+                    data: ['降水量 (mm)', '气温 (°C)'], // 改为中文更易理解
+                    textStyle: {
+                        fontFamily: 'Noto Serif SC',
+                        color: '#555',
+                        fontSize: 15,
+                        fontWeight: 600
+                    },
+                    top: 15,
+                    left: 'center',
+                    itemGap: 30,
+                    itemWidth: 20,
+                    itemHeight: 10
+                },
+                grid: {
+                    left: '5%',
+                    right: '5%',
+                    bottom: '12%',
+                    top: '10%',
+                    containLabel: true
+                },
+                xAxis: [
+                    {
+                        type: 'category',
+                        data: ['立春', '雨水', '惊蛰', '春分', '清明', '谷雨', '立夏', '小满', '芒种', '夏至', '小暑', '大暑', '立秋', '处暑', '白露', '秋分', '寒露', '霜降', '立冬', '小雪', '大雪', '冬至', '小寒', '大寒'],
+                        axisPointer: {
+                            type: 'shadow',
+                            shadowStyle: {
+                                color: 'rgba(212,191,167,0.1)'
+                            }
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: '#b99e7c',
+                                width: 2
+                            }
+                        },
+                        axisLabel: {
+                            fontFamily: 'Noto Serif SC',
+                            color: '#555',
+                            fontSize: 12,
+                            rotate: 40,
+                            margin: 10
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: '#d4bfa7',
+                                width: 2
+                            },
+                            length: 6
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    }
+                ],
+                yAxis: [
+                    {
+                        type: 'value',
+                        nameTextStyle: {
+                            fontFamily: 'Noto Serif SC',
+                            color: '#846323',
+                            fontSize: 14,
+                            padding: [0, 0, 0, 10]
+                        },
+                        nameGap: 20,
+                        min: 0,
+                        max: 95,
+                        interval: 10, // 调整间隔更稀疏
+                        axisLabel: {
+                            formatter: '{value} mm',
+                            fontFamily: 'Noto Serif SC',
+                            color: '#666',
+                            fontSize: 12
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: '#b99e7c',
+                                width: 2
+                            }
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: '#d4bfa7',
+                                width: 2
+                            },
+                            length: 6
+                        },
+                        splitLine: {
+                            lineStyle: {
+                                color: 'rgba(212,191,167,0.15)',
+                                type: 'dashed'
+                            }
+                        }
+                    },
+                    {
+                        type: 'value',
+                 
+                        nameTextStyle: {
+                            fontFamily: 'Noto Serif SC',
+                            color: '#c06b55',
+                            fontSize: 14,
+                            padding: [0, 10, 0, 0]
+                        },
+                        nameGap: 20,
+                        min: -2,
+                        max: 35,
+                        interval: 5,
+                        axisLabel: {
+                            formatter: '{value} °C',
+                            fontFamily: 'Noto Serif SC',
+                            color: '#666',
+                            fontSize: 12
+                        },
+                        axisLine: {
+                            lineStyle: {
+                                color: '#b99e7c',
+                                width: 2
+                            }
+                        },
+                        axisTick: {
+                            lineStyle: {
+                                color: '#d4bfa7',
+                                width: 2
+                            },
+                            length: 6
+                        },
+                        splitLine: {
+                            show: false
+                        }
+                    }
+                ],
+                series: [
+                    {
+                        name: '降水量 (mm)',
+                        type: 'bar',
+                        barWidth: '60%', // 调整柱子宽度
+                        tooltip: {
+                            valueFormatter: function (value) {
+                                return value + ' 毫米';
+                            }
+                        },
+                        data: [6, 8, 12, 18, 25, 32, 35, 40, 55, 65, 85, 90, 75, 65, 55, 45, 35, 25, 15, 10, 7, 5, 4, 4],
+                        itemStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: '#e0c8a0' },
+                                { offset: 1, color: '#846323' }
+                            ]),
+                            borderRadius: [6, 6, 0, 0], // 顶部圆角更美观
+                            borderColor: '#d4bfa7',
+                            borderWidth: 1
+                        },
+                        emphasis: {
+                            itemStyle: {
+                                color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                    { offset: 0, color: '#d4bfa7' },
+                                    { offset: 1, color: '#987a44' }
+                                ]),
+                                shadowBlur: 10,
+                                shadowColor: 'rgba(0,0,0,0.2)'
+                            }
+                        }
+                    },
+                    {
+                        name: '气温 (°C)',
+                        type: 'line',
+                        yAxisIndex: 1,
+                        smooth: true, // 平滑曲线
+                        tooltip: {
+                            valueFormatter: function (value) {
+                                return value + ' 摄氏度';
+                            }
+                        },
+                        data: [4, 6, 10, 14, 19, 23, 26, 28, 30, 32, 33, 33, 31, 29, 26, 22, 17, 13, 8, 5, 2, 0, -1, 0],
+                        lineStyle: {
+                            width: 4,
+                            color: new echarts.graphic.LinearGradient(0, 0, 1, 0, [
+                                { offset: 0, color: '#c06b55' },
+                                { offset: 1, color: '#e8a089' }
+                            ])
+                        },
+                        symbol: 'circle',
+                        symbolSize: 8,
+                        symbolOffset: [0, 0],
+                        itemStyle: {
+                            color: '#c06b55',
+                            borderColor: '#fff',
+                            borderWidth: 2,
+                            shadowBlur: 5,
+                            shadowColor: 'rgba(192,107,85,0.3)'
+                        },
+                        emphasis: {
+                            symbolSize: 14,
+                            itemStyle: {
+                                shadowBlur: 10,
+                                shadowColor: 'rgba(192,107,85,0.5)'
+                            }
+                        },
+                        areaStyle: {
+                            color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
+                                { offset: 0, color: 'rgba(192,107,85,0.25)' },
+                                { offset: 1, color: 'rgba(192,107,85,0.05)' }
+                            ])
+                        }
+                    }
+                ],
+                animationDuration: 1500,
+                animationEasing: 'cubicOut'
+            };
+
+            // 设置并渲染图表
+            myChart.setOption(option);
+            
+            // 响应窗口大小变化
+            window.addEventListener('resize', function() {
+                myChart.resize();
+            });
+
+            // 监听图表鼠标移入移出事件，增强交互
+            myChart.on('mouseover', function(params) {
+                if (params.componentType === 'series') {
+                    chartDom.style.cursor = 'pointer';
+                }
+            });
+            myChart.on('mouseout', function(params) {
+                chartDom.style.cursor = 'default';
+            });
+        });
+         // 页面加载动画
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 1s ease-in';
+                document.body.style.opacity = '1';
+                
+                // Hero标题动画
+                const heroTitle = document.querySelector('.hero-title');
+                heroTitle.style.animation = 'none';
+                setTimeout(() => {
+                    heroTitle.style.animation = 'fadeIn 2s ease-out';
+                }, 100);
+            }, 100);
+        
+
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+        <!-- 页面右下角数据来源 -->
+<div class="page-data-source">数据来源：郑州气象局</div>
+</body>
+</html>
