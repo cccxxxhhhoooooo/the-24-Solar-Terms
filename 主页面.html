@@ -1,0 +1,1138 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap" rel="stylesheet">
+    <title>二十四节气</title>
+    <style>
+        /* 全局重置与基础样式 */
+         * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-weight: normal;
+            font-size: 20px;
+        }
+
+         body {
+            background: 
+                url("../statics/山水背景图片.png") center/cover no-repeat,
+                linear-gradient(180deg, rgba(250,245,240,0.85), rgba(245,240,235,0.9));
+            background-attachment: fixed;
+            color: #333;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* 彻底隐藏页面滚动条 */
+        html {
+            height: 100%;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: transparent !important;
+        }
+        body::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 1.5rem 0;
+            background: rgba(255,255,255,0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-100%);
+            transition: all 0.5s ease;
+        }
+
+        .navbar.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255,255,255,0.95);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: #555;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #777;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover {
+            color: #333;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        @media (max-width: 768px) {
+            .navbar {
+                gap: 2rem;
+                padding: 1rem 0;
+            }
+        }
+
+       
+        .hero {
+            width: 100vw;
+            height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: 
+                url("images/山水背景图片.png") center/cover no-repeat,
+        }
+
+        /* 动态墨色晕染效果 */
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at 50% 50%, rgba(150,145,140,0.05) 0%, rgba(0,0,0,0) 70%);
+            animation: inkFade 20s infinite alternate ease-in-out;
+            z-index: 1;
+        }
+
+        @keyframes inkFade {
+            0% { opacity: 0.3; transform: scale(1); }
+            100% { opacity: 0.6; transform: scale(1.05); }
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            color: #444;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #777;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            position: relative;
+            z-index: 2;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 40px;
+            border: 1px solid #999;
+            border-radius: 12px;
+            z-index: 2;
+            opacity: 0.7;
+            animation: breathe 3s infinite ease-in-out;
+        }
+
+        .scroll-down::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background-color: #999;
+            border-radius: 2px;
+            animation: scroll 2s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        @keyframes scroll {
+            0% { transform: translate(-50%, 0); opacity: 1; }
+            100% { transform: translate(-50%, 20px); opacity: 0; }
+        }
+        .section-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 400;
+            letter-spacing: 0.2em;
+            color: #444;
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+
+        .section-title::after {
+            content: "";
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 60px;
+            height: 2px;
+        }
+
+
+        /* 响应式调整 */
+        @media (max-width: 768px) {
+            .section-title {
+                font-size: 2rem;
+                letter-spacing: 0.1em;
+            }
+            
+            .section-subtitle {
+                font-size: 1rem;
+                padding: 0 1rem;
+            }
+            
+            .section-header {
+                margin-bottom: 2rem;
+            }
+        }
+        /* 节气卡片区域样式 */
+        .solar-terms-container {
+            position: relative;
+            width: 100%;
+            padding: 8rem 0 8rem 0;
+            overflow: hidden;
+              background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            padding: 4rem 2rem;
+            margin: 2rem auto;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            box-shadow: 
+                0 10px 30px rgba(0, 0, 0, 0.1),
+                inset 0 1px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .solar-terms {
+            padding: 2rem 5vw;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            white-space: nowrap;
+            scroll-behavior: smooth;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .solar-terms::-webkit-scrollbar {
+            display: none !important;
+            width: 0 !important;
+            height: 0 !important;
+            background: transparent !important;
+        }
+
+        .solar-terms::-webkit-scrollbar-thumb {
+            background: transparent !important;
+        }
+        .solar-terms::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+
+        .terms-container {
+            display: flex;
+            flex-direction: column;
+            height: auto;
+            gap: 2rem;
+            min-width: calc(12 * 280px);
+            width: max-content;
+        }
+
+        .term-row {
+            display: flex;
+            gap: 2rem;
+            min-height: 260px;
+        }
+
+        .term-card {
+            width: 240px;
+            min-height: 100px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(4px);
+            -webkit-backdrop-filter: blur(4px);
+            border: 1px solid rgba(0,0,0,0.05);
+            border-radius: 4px;
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
+            transition: all 0.4s ease;
+            cursor: pointer;
+            white-space: normal;
+        }
+
+        .term-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+        }
+
+        .term-name {
+            font-size: 1.8rem;
+            font-weight: 400;
+            letter-spacing: 0.1em;
+            color: #444;
+            margin-bottom: 0.5rem;
+        }
+
+        .term-date {
+            font-size: 0.8rem;
+            color: #888;
+            letter-spacing: 0.05em;
+            margin-bottom: 1rem;
+        }
+
+        .term-desc {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.8;
+            letter-spacing: 0.08em;
+            flex-grow: 1;
+        }
+
+        /* 滑动按钮样式 */
+        .scroll-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 50px;
+            height: 50px;
+            background: rgba(255,255,255,0.9);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            border: 1px solid rgba(0,0,0,0.1);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            z-index: 10;
+            opacity: 0.7;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+            color: #666;
+        }
+
+        .scroll-btn:hover {
+            opacity: 1;
+            background: rgba(255,255,255,1);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .scroll-btn-left {
+            left: 1rem;
+        }
+
+        .scroll-btn-right {
+            right: 1rem;
+        }
+
+        .scroll-btn.disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .scroll-btn.disabled:hover {
+            transform: translateY(-50%) scale(1);
+            background: rgba(255,255,255,0.9);
+            box-shadow: none;
+        }
+
+        /* 移动端隐藏滑动按钮 */
+        @media (max-width: 768px) {
+            .scroll-btn {
+                display: none;
+            }
+        }
+
+        /* 每个节气的专属低饱和配色 - 按四季分类 */
+        .term-card.lichun { background: linear-gradient(180deg, rgba(240,248,240,0.95), rgba(230,240,230,0.9)); }
+        .term-card.rain { background: linear-gradient(180deg, rgba(235,245,250,0.95), rgba(225,235,245,0.9)); }
+        .term-card.jingzhe { background: linear-gradient(180deg, rgba(250,245,235,0.95), rgba(245,240,225,0.9)); }
+        .term-card.chunfen { background: linear-gradient(180deg, rgba(245,250,245,0.95), rgba(235,245,235,0.9)); }
+        .term-card.qingming { background: linear-gradient(180deg, rgba(230,245,240,0.95), rgba(220,235,230,0.9)); }
+        .term-card.guyu { background: linear-gradient(180deg, rgba(250,240,230,0.95), rgba(245,230,220,0.9)); }
+        .term-card.lixia { background: linear-gradient(180deg, rgba(255,248,240,0.95), rgba(250,240,230,0.9)); }
+        .term-card.xiaoman { background: linear-gradient(180deg, rgba(255,245,235,0.95), rgba(250,235,220,0.9)); }
+        .term-card.mangzhong { background: linear-gradient(180deg, rgba(255,238,221,0.95), rgba(250,230,210,0.9)); }
+        .term-card.xiazhi { background: linear-gradient(180deg, rgba(255,235,220,0.95), rgba(250,225,205,0.9)); }
+        .term-card.xiaoshu { background: linear-gradient(180deg, rgba(255,228,218,0.95), rgba(250,220,200,0.9)); }
+        .term-card.dashu { background: linear-gradient(180deg, rgba(255,220,200,0.95), rgba(245,210,190,0.9)); }
+        .term-card.liqiu { background: linear-gradient(180deg, rgba(250,235,220,0.95), rgba(245,225,205,0.9)); }
+        .term-card.chushu { background: linear-gradient(180deg, rgba(245,230,215,0.95), rgba(240,220,200,0.9)); }
+        .term-card.bailu { background: linear-gradient(180deg, rgba(240,225,210,0.95), rgba(235,215,195,0.9)); }
+        .term-card.qiufen { background: linear-gradient(180deg, rgba(235,215,190,0.95), rgba(230,205,180,0.9)); }
+        .term-card.hanlu { background: linear-gradient(180deg, rgba(230,205,180,0.95), rgba(225,195,170,0.9)); }
+        .term-card.shuangjiang { background: linear-gradient(180deg, rgba(225,190,165,0.95), rgba(220,180,155,0.9)); }
+        .term-card.lidong { background: linear-gradient(180deg, rgba(235,240,245,0.95), rgba(225,235,245,0.9)); }
+        .term-card.xiaoxue { background: linear-gradient(180deg, rgba(230,238,245,0.95), rgba(220,230,240,0.9)); }
+        .term-card.daxue { background: linear-gradient(180deg, rgba(225,235,245,0.95), rgba(215,228,240,0.9)); }
+        .term-card.dongzhi { background: linear-gradient(180deg, rgba(220,230,240,0.95), rgba(210,223,235,0.9)); }
+        .term-card.xiaohan { background: linear-gradient(180deg, rgba(215,225,238,0.95), rgba(205,218,233,0.9)); }
+        .term-card.dahan { background: linear-gradient(180deg, rgba(210,220,235,0.95), rgba(200,213,230,0.9)); }
+
+        /* 弹出层样式 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.2);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .modal.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            width: 90%;
+            max-width: 600px;
+            background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border-radius: 8px;
+            padding: 3rem;
+            transform: translateY(20px);
+            transition: all 0.4s ease;
+            position: relative;
+        }
+
+        .modal.show .modal-content {
+            transform: translateY(0);
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 2rem;
+            right: 2rem;
+            width: 32px;
+            height: 32px;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-close::before, .modal-close::after {
+            content: "";
+            position: absolute;
+            width: 1px;
+            height: 20px;
+            background-color: #777;
+        }
+
+        .modal-close::before {
+            transform: rotate(45deg);
+        }
+
+        .modal-close::after {
+            transform: rotate(-45deg);
+        }
+
+        .modal-close:hover::before, .modal-close:hover::after {
+            background-color: #333;
+        }
+
+        .modal-title {
+            font-size: 2rem;
+            letter-spacing: 0.1em;
+            color: #444;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-three {
+            font-size: 1rem;
+            color: #666;
+            line-height: 2;
+            margin-bottom: 1.5rem;
+            letter-spacing: 0.05em;
+        }
+
+        .modal-poem {
+            font-size: 1.1rem;
+            color: #555;
+            line-height: 2;
+            font-style: italic;
+            border-left: 2px solid #ddd;
+            padding-left: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .modal-desc {
+            font-size: 1rem;
+            color: #666;
+            line-height: 1.8;
+            letter-spacing: 0.05em;
+        }
+
+        /* 响应式适配 */
+        @media (max-width: 768px) {
+            .hero-title {
+                letter-spacing: 0.1em;
+            }
+            .navbar {
+                gap: 2rem;
+                padding: 1rem 0;
+            }
+            .term-card {
+                width: 240px;
+                height: 340px;
+                padding: 1.5rem;
+            }
+            .modal-content {
+                padding: 2rem;
+                margin: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- 1. 首屏 Hero 区 -->
+    <section class="hero">
+        <h1 class="hero-title">时律·廿四</h1>
+        <p class="hero-subtitle">时序轮转，四时有序</p>
+        <div class="scroll-down"></div>
+    </section>
+
+    <!-- 2. 悬浮导航栏 -->
+    <nav class="navbar">
+        <a onclick="window.location.href='主页面.html'">节气</a>
+        <a onclick="window.location.href='历史渊源.html'">渊源</a>
+        <a onclick="window.location.href='节侯.html'">节侯</a>
+        <a onclick="window.location.href='风物.html'">风物</a>
+        <a onclick="window.location.href='问答.html'">问答</a>
+        <a onclick="window.location.href='传承.html'">传承</a>
+    </nav>
+
+    <!-- 3. 节气卡片区域 -->
+    <section class="solar-terms-container">
+        <div class="section-header">
+    <h2 class="section-title">廿四时笺</h2>
+</div>
+        <!-- 左滑按钮 -->
+        <button class="scroll-btn scroll-btn-left" id="scrollLeft">
+            <i class="fas fa-chevron-left"></i>
+        </button>
+        
+        <!-- 节气卡片容器 -->
+        <section class="solar-terms" id="terms">
+            <div class="terms-container">
+                <!-- 第一行：春季+夏季（12个节气） -->
+                <div class="term-row">
+                    <!-- 立春 -->
+                    <div class="term-card lichun" data-term="lichun">
+                        <div>
+                            <h3 class="term-name">立春</h3>
+                            <p class="term-date">公历 2月3-5日</p>
+                        </div>
+                        <p class="term-desc">东风解冻 · 蛰虫始振 · 鱼陟负冰</p>
+                    </div>
+                    
+                    <!-- 雨水 -->
+                    <div class="term-card rain" data-term="rain">
+                        <div>
+                            <h3 class="term-name">雨水</h3>
+                            <p class="term-date">公历 2月18-20日</p>
+                        </div>
+                        <p class="term-desc">獭祭鱼 · 鸿雁来 · 草木萌动</p>
+                    </div>
+                    
+                    <!-- 惊蛰 -->
+                    <div class="term-card jingzhe" data-term="jingzhe">
+                        <div>
+                            <h3 class="term-name">惊蛰</h3>
+                            <p class="term-date">公历 3月5-7日</p>
+                        </div>
+                        <p class="term-desc">桃始华 · 仓庚鸣 · 鹰化为鸠</p>
+                    </div>
+                    
+                    <!-- 春分 -->
+                    <div class="term-card chunfen" data-term="chunfen">
+                        <div>
+                            <h3 class="term-name">春分</h3>
+                            <p class="term-date">公历 3月20-22日</p>
+                        </div>
+                        <p class="term-desc">玄鸟至 · 雷乃发声 · 始电</p>
+                    </div>
+                    
+                    <!-- 清明 -->
+                    <div class="term-card qingming" data-term="qingming">
+                        <div>
+                            <h3 class="term-name">清明</h3>
+                            <p class="term-date">公历 4月4-6日</p>
+                        </div>
+                        <p class="term-desc">桐始华 · 田鼠化为鴽 · 虹始见</p>
+                    </div>
+                    
+                    <!-- 谷雨 -->
+                    <div class="term-card guyu" data-term="guyu">
+                        <div>
+                            <h3 class="term-name">谷雨</h3>
+                            <p class="term-date">公历 4月19-21日</p>
+                        </div>
+                        <p class="term-desc">萍始生 · 鸣鸠拂其羽 · 戴胜降于桑</p>
+                    </div>
+                    
+                    <!-- 立夏 -->
+                    <div class="term-card lixia" data-term="lixia">
+                        <div>
+                            <h3 class="term-name">立夏</h3>
+                            <p class="term-date">公历 5月5-7日</p>
+                        </div>
+                        <p class="term-desc">蝼蝈鸣 · 蚯蚓出 · 王瓜生</p>
+                    </div>
+                    
+                    <!-- 小满 -->
+                    <div class="term-card xiaoman" data-term="xiaoman">
+                        <div>
+                            <h3 class="term-name">小满</h3>
+                            <p class="term-date">公历 5月20-22日</p>
+                        </div>
+                        <p class="term-desc">苦菜秀 · 靡草死 · 麦秋至</p>
+                    </div>
+                    
+                    <!-- 芒种 -->
+                    <div class="term-card mangzhong" data-term="mangzhong">
+                        <div>
+                            <h3 class="term-name">芒种</h3>
+                            <p class="term-date">公历 6月5-7日</p>
+                        </div>
+                        <p class="term-desc">螳螂生 · 鵙始鸣 · 反舌无声</p>
+                    </div>
+                    
+                    <!-- 夏至 -->
+                    <div class="term-card xiazhi" data-term="xiazhi">
+                        <div>
+                            <h3 class="term-name">夏至</h3>
+                            <p class="term-date">公历 6月21-22日</p>
+                        </div>
+                        <p class="term-desc">鹿角解 · 蝉始鸣 · 半夏生</p>
+                    </div>
+                    
+                    <!-- 小暑 -->
+                    <div class="term-card xiaoshu" data-term="xiaoshu">
+                        <div>
+                            <h3 class="term-name">小暑</h3>
+                            <p class="term-date">公历 7月6-8日</p>
+                        </div>
+                        <p class="term-desc">温风至 · 蟋蟀居壁 · 鹰始鸷</p>
+                    </div>
+                    
+                    <!-- 大暑 -->
+                    <div class="term-card dashu" data-term="dashu">
+                        <div>
+                            <h3 class="term-name">大暑</h3>
+                            <p class="term-date">公历 7月22-24日</p>
+                        </div>
+                        <p class="term-desc">腐草为萤 · 土润溽暑 · 大雨时行</p>
+                    </div>
+                </div>
+                
+                <!-- 第二行：秋季+冬季（12个节气） -->
+                <div class="term-row">
+                    <!-- 立秋 -->
+                    <div class="term-card liqiu" data-term="liqiu">
+                        <div>
+                            <h3 class="term-name">立秋</h3>
+                            <p class="term-date">公历 8月7-9日</p>
+                        </div>
+                        <p class="term-desc">凉风至 · 白露生 · 寒蝉鸣</p>
+                    </div>
+                    
+                    <!-- 处暑 -->
+                    <div class="term-card chushu" data-term="chushu">
+                        <div>
+                            <h3 class="term-name">处暑</h3>
+                            <p class="term-date">公历 8月22-24日</p>
+                        </div>
+                        <p class="term-desc">鹰乃祭鸟 · 天地始肃 · 禾乃登</p>
+                    </div>
+                    
+                    <!-- 白露 -->
+                    <div class="term-card bailu" data-term="bailu">
+                        <div>
+                            <h3 class="term-name">白露</h3>
+                            <p class="term-date">公历 9月7-9日</p>
+                        </div>
+                        <p class="term-desc">鸿雁来 · 玄鸟归 · 群鸟养羞</p>
+                    </div>
+                    
+                    <!-- 秋分 -->
+                    <div class="term-card qiufen" data-term="qiufen">
+                        <div>
+                            <h3 class="term-name">秋分</h3>
+                            <p class="term-date">公历 9月22-24日</p>
+                        </div>
+                        <p class="term-desc">雷始收声 · 蛰虫坯户 · 水始涸</p>
+                    </div>
+                    
+                    <!-- 寒露 -->
+                    <div class="term-card hanlu" data-term="hanlu">
+                        <div>
+                            <h3 class="term-name">寒露</h3>
+                            <p class="term-date">公历 10月8-9日</p>
+                        </div>
+                        <p class="term-desc">鸿雁来宾 · 雀入大水为蛤 · 菊有黄华</p>
+                    </div>
+                    
+                    <!-- 霜降 -->
+                    <div class="term-card shuangjiang" data-term="shuangjiang">
+                        <div>
+                            <h3 class="term-name">霜降</h3>
+                            <p class="term-date">公历 10月23-24日</p>
+                        </div>
+                        <p class="term-desc">豺乃祭兽 · 草木黄落 · 蛰虫咸俯</p>
+                    </div>
+                    
+                    <!-- 立冬 -->
+                    <div class="term-card lidong" data-term="lidong">
+                        <div>
+                            <h3 class="term-name">立冬</h3>
+                            <p class="term-date">公历 11月7-8日</p>
+                        </div>
+                        <p class="term-desc">水始冰 · 地始冻 · 雉入大水为蜃</p>
+                    </div>
+                    
+                    <!-- 小雪 -->
+                    <div class="term-card xiaoxue" data-term="xiaoxue">
+                        <div>
+                            <h3 class="term-name">小雪</h3>
+                            <p class="term-date">公历 11月22-23日</p>
+                        </div>
+                        <p class="term-desc">虹藏不见 · 天气上升地气下降 · 闭塞而成冬</p>
+                    </div>
+                    
+                    <!-- 大雪 -->
+                    <div class="term-card daxue" data-term="daxue">
+                        <div>
+                            <h3 class="term-name">大雪</h3>
+                            <p class="term-date">公历 12月6-8日</p>
+                        </div>
+                        <p class="term-desc">鹖鴠不鸣 · 虎始交 · 荔挺出</p>
+                    </div>
+                    
+                    <!-- 冬至 -->
+                    <div class="term-card dongzhi" data-term="dongzhi">
+                        <div>
+                            <h3 class="term-name">冬至</h3>
+                            <p class="term-date">公历 12月21-23日</p>
+                        </div>
+                        <p class="term-desc">蚯蚓结 · 麋角解 · 水泉动</p>
+                    </div>
+                    
+                    <!-- 小寒 -->
+                    <div class="term-card xiaohan" data-term="xiaohan">
+                        <div>
+                            <h3 class="term-name">小寒</h3>
+                            <p class="term-date">公历 1月5-7日</p>
+                        </div>
+                        <p class="term-desc">雁北乡 · 鹊始巢 · 雉始鸲</p>
+                    </div>
+                    
+                    <!-- 大寒 -->
+                    <div class="term-card dahan" data-term="dahan">
+                        <div>
+                            <h3 class="term-name">大寒</h3>
+                            <p class="term-date">公历 1月20-21日</p>
+                        </div>
+                        <p class="term-desc">鸡乳 · 征鸟厉疾 · 水泽腹坚</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 右滑按钮 -->
+        <button class="scroll-btn scroll-btn-right" id="scrollRight">
+            <i class="fas fa-chevron-right"></i>
+        </button>
+    </section>
+
+    <!-- 4. 节气详情弹出层 -->
+    <div class="modal" id="termModal">
+        <div class="modal-content">
+            <div class="modal-close" id="modalClose"></div>
+            <h2 class="modal-title" id="modalTitle">立春</h2>
+            <div class="modal-three" id="modalThree">
+                一候东风解冻；<br>
+                二候蛰虫始振；<br>
+                三候鱼陟负冰。
+            </div>
+            <div class="modal-poem" id="modalPoem">
+                律回岁晚冰霜少，春到人间草木知。<br>
+                便觉眼前生意满，东风吹水绿参差。<br>
+                —— 张栻《立春偶成》
+            </div>
+            <div class="modal-desc" id="modalDesc">
+                立春，为二十四节气之首。立，是"开始"之意；春，代表着温暖、生长。立春标志着万物闭藏的冬季已过去，开始进入风和日暖、万物生长的春季。在自然界，立春最显著的特点就是万物开始有复苏的迹象。
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('show');
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('show');
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        // 页面加载时检查初始位置
+        window.addEventListener('load', () => {
+            updateScrollButtons();
+        });
+
+        // 节气详情数据
+        const termData = {
+            lichun: {
+                title: "立春",
+                three: "一候东风解冻；<br>二候蛰虫始振；<br>三候鱼陟负冰。",
+                poem: "律回岁晚冰霜少，春到人间草木知。<br>便觉眼前生意满，东风吹水绿参差。<br>—— 张栻《立春偶成》",
+                desc: "立春，为二十四节气之首。立，是“开始”之意；春，代表着温暖、生长。立春标志着万物闭藏的冬季已过去，开始进入风和日暖、万物生长的春季。在自然界，立春最显著的特点就是万物开始有复苏的迹象。"
+            },
+            rain: {
+                title: "雨水",
+                three: "一候獭祭鱼；<br>二候鸿雁来；<br>三候草木萌动。",
+                poem: "天街小雨润如酥，草色遥看近却无。<br>最是一年春好处，绝胜烟柳满皇都。<br>—— 韩愈《早春呈水部张十八员外》",
+                desc: "雨水，是春季第二个节气。雨水节气的含义是降雨开始，雨量渐增。此时，气温回升、冰雪融化、降水增多，故取名为雨水。雨水节气的特点是气温变化大，空气湿度逐渐升高。"
+            },
+            jingzhe: {
+                title: "惊蛰",
+                three: "一候桃始华；<br>二候仓庚鸣；<br>三候鹰化为鸠。",
+                poem: "微雨众卉新，一雷惊蛰始。<br>田家几日闲，耕种从此起。<br>—— 韦应物《观田家》",
+                desc: "惊蛰，又名“启蛰”，是春季第三个节气。惊蛰反映的是自然生物受节律变化影响而出现萌发生长的现象。时至惊蛰，阳气上升、气温回暖、春雷乍动、雨水增多，万物生机盎然。"
+            },
+            chunfen: {
+                title: "春分",
+                three: "一候玄鸟至；<br>二候雷乃发声；<br>三候始电。",
+                poem: "仲春初四日，春色正中分。<br>绿野徘徊月，晴天断续云。<br>—— 徐铉《春分日》",
+                desc: "春分，是春季第四个节气。春分的意义，一是指一天时间白天黑夜平分，各为12小时；二是古时以立春至立夏为春季，春分正当春季三个月之中，平分了春季。春分后，气候温和，雨水充沛，阳光明媚。"
+            },
+            qingming: {
+                title: "清明",
+                three: "一候桐始华；<br>二候田鼠化为鴽；<br>三候虹始见。",
+                poem: "清明时节雨纷纷，路上行人欲断魂。<br>借问酒家何处有？牧童遥指杏花村。<br>—— 杜牧《清明》",
+                desc: "清明，兼具自然与人文两大内涵，既是自然节气点，也是传统节日。清明节气，气清景明，万物皆显，因此得名。清明时节，我国南方地区气候清爽温暖，大地呈现春和景明之象；北方地区也开始断雪，渐渐进入阳光明媚的春天。"
+            },
+            guyu: {
+                title: "谷雨",
+                three: "一候萍始生；<br>二候鸣鸠拂其羽；<br>三候戴胜降于桑。",
+                poem: "谷雨如丝复似尘，煮瓶浮蜡正尝新。<br>牡丹破萼樱桃熟，未许飞花减却春。<br>—— 范成大《谷雨》",
+                desc: "谷雨，是春季的最后一个节气。谷雨取自“雨生百谷”之意，此时降水明显增加，田中的秧苗初插、作物新种，最需要雨水的滋润，降雨量充足而及时，谷类作物能茁壮成长。谷雨与雨水、小满、小雪、大雪等节气一样，都是反映降水现象的节气。"
+            },
+            lixia: {
+                title: "立夏",
+                three: "一候蝼蝈鸣；<br>二候蚯蚓出；<br>三候王瓜生。",
+                poem: "绿树阴浓夏日长，楼台倒影入池塘。<br>水晶帘动微风起，满架蔷薇一院香。<br>—— 高骈《山亭夏日》",
+                desc: "立夏，是夏季的第一个节气，表示盛夏时节的正式开始。立夏标示着万物进入旺季生长的阶段。立夏后，日照增加，逐渐升温，雷雨增多，农作物进入了茁壮成长阶段。"
+            },
+            xiaoman: {
+                title: "小满",
+                three: "一候苦菜秀；<br>二候靡草死；<br>三候麦秋至。",
+                poem: "夜莺啼绿柳，皓月醒长空。<br>最爱垄头麦，迎风笑落红。<br>—— 欧阳修《小满》",
+                desc: "小满，是夏季第二个节气。小满之名，有两层含义：一是与气候降水有关，小满节气期间南方的暴雨开始增多，降水频繁；二是与农业小麦有关，在北方地区小满节气期间麦类等夏熟作物籽粒已开始饱满，但还未成熟，只是小满，还未大满。"
+            },
+            mangzhong: {
+                title: "芒种",
+                three: "一候螳螂生；<br>二候鵙始鸣；<br>三候反舌无声。",
+                poem: "时雨及芒种，四野皆插秧。<br>家家麦饭美，处处菱歌长。<br>—— 陆游《时雨》",
+                desc: "芒种，又名“忙种”，是夏季第三个节气。芒种的“芒”字，是指麦类等有芒植物的收获，芒种的“种”字，是指谷黍类作物播种的节令。芒种预示着农民开始了忙碌的田间生活，是耕种最忙的时节。"
+            },
+            xiazhi: {
+                title: "夏至",
+                three: "一候鹿角解；<br>二候蝉始鸣；<br>三候半夏生。",
+                poem: "昼晷已云极，宵漏自此长。<br>未及施政教，所忧变炎凉。<br>—— 韦应物《夏至避暑北池》",
+                desc: "夏至，是夏季第四个节气。夏至是太阳北行的极致，这天北半球各地的白昼时间达到全年最长。夏至过后，太阳直射点开始从北回归线向南移动，北半球白昼开始逐渐变短。气温高、湿度大、不时出现雷阵雨，是夏至后的天气特点。"
+            },
+            xiaoshu: {
+                title: "小暑",
+                three: "一候温风至；<br>二候蟋蟀居宇；<br>三候鹰始鸷。",
+                poem: "倏忽温风至，因循小暑来。<br>竹喧先觉雨，山暗已闻雷。<br>—— 元稹《小暑六月节》",
+                desc: "小暑，是夏季第五个节气。小暑为小热，还不十分热，意指天气开始炎热，但还没到最热。小暑开始进入伏天，所谓“热在三伏”，三伏天通常出现在小暑与处暑之间，是一年中气温最高且又潮湿、闷热的时段。"
+            },
+            dashu: {
+                title: "大暑",
+                three: "一候腐草为萤；<br>二候土润溽暑；<br>三候大雨时行。",
+                poem: "何以销烦暑，端居一院中。<br>眼前无长物，窗下有清风。<br>—— 白居易《销暑》",
+                desc: "大暑，是夏季最后一个节气。大暑指炎热之极，是一年中日照最多、最炎热的节气，“湿热交蒸”在此时到达顶点。大暑气候特征：高温酷热，雷阵雨多，雨量充沛，是万物狂长的时节。"
+            },
+            liqiu: {
+                title: "立秋",
+                three: "一候凉风至；<br>二候白露生；<br>三候寒蝉鸣。",
+                poem: "乳鸦啼散玉屏空，一枕新凉一扇风。<br>睡起秋声无觅处，满阶梧叶月明中。<br>—— 刘翰《立秋》",
+                desc: "立秋，是秋季的第一个节气，标志着孟秋时节的正式开始。立秋并不代表酷热天气就此结束，立秋还在暑热时段，尚未出暑，秋季第二个节气（处暑）才出暑，初秋期间天气仍然很热，故有“秋老虎”之称。"
+            },
+            chushu: {
+                title: "处暑",
+                three: "一候鹰乃祭鸟；<br>二候天地始肃；<br>三候禾乃登。",
+                poem: "处暑无三日，新凉直万金。<br>白头更世事，青草印禅心。<br>—— 陆游《处暑》",
+                desc: "处暑，是秋季第二个节气。处暑，即为“出暑”，是炎热离开的意思。处暑节气意味着酷热难熬的天气到了尾声，暑气渐渐消退，天气由炎热向凉爽过渡。但由于短期回热天气（俗称“秋老虎”）的影响，处暑过后仍有持续高温。"
+            },
+            bailu: {
+                title: "白露",
+                three: "一候鸿雁来；<br>二候玄鸟归；<br>三候群鸟养羞。",
+                poem: "白露团甘子，清晨散马蹄。<br>圃开连石树，船渡入江溪。<br>—— 杜甫《白露》",
+                desc: "白露，是秋季第三个节气。白露是反映自然界寒气增长的重要节气，由于天气逐渐转凉，白昼有阳光尚热，但傍晚后气温便很快下降，昼夜温差大。白露时节，暑气渐消，秋高气爽，丹桂飘香，鸿雁和燕子等候鸟开始南飞避寒。"
+            },
+            qiufen: {
+                title: "秋分",
+                three: "一候雷始收声；<br>二候蛰虫坯户；<br>三候水始涸。",
+                poem: "金气秋分，风清露冷秋期半。<br>凉蟾光满，桂子飘香远。<br>—— 谢逸《点绛唇·呈洛滨筠溪二老》",
+                desc: "秋分，是秋季第四个节气。秋分这天太阳几乎直射地球赤道，全球各地昼夜等长。秋分日后，太阳光直射位置南移，北半球昼短夜长，昼夜温差加大，气温逐日下降。秋分曾是传统的“祭月节”，中秋节由秋夕祭月演变而来。"
+            },
+            hanlu: {
+                title: "寒露",
+                three: "一候鸿雁来宾；<br>二候雀入大水为蛤；<br>三候菊有黄华。",
+                poem: "萧疏桐叶上，月白露初团。<br>滴沥清光满，,荧煌素彩寒。<br>—— 戴察《月夜梧桐叶上见寒露》",
+                desc: "寒露，是秋季第五个节气。寒露是一个反映气候变化特征的节气，寒露节气后，昼渐短，夜渐长，日照减少，热气慢慢退去，寒气渐生，昼夜的温差较大，晨晚略感丝丝寒意。从气候特点上看，寒露时节，南方秋意渐浓，气爽风凉，少雨干燥；北方广大地区已从深秋进入或即将进入冬季。"
+            },
+            shuangjiang: {
+                title: "霜降",
+                three: "一候豺乃祭兽；<br>二候草木黄落；<br>三候蛰虫咸俯。",
+                poem: "霜降水返壑，风落木归山。<br>冉冉岁将宴，物皆复本源。<br>—— 白居易《岁晚》",
+                desc: "霜降，是秋季的最后一个节气。霜降节气特点是早晚天气较冷、中午则比较热，昼夜温差大，秋燥明显。霜降不是表示“降霜”，而是表示气温骤降、昼夜温差大。霜降时节，万物毕成，毕入于戌，阳下入地，阴气始凝，天气渐寒始于霜降。"
+            },
+            lidong: {
+                title: "立冬",
+                three: "一候水始冰；<br>二候地始冻；<br>三候雉入大水为蜃。",
+                poem: "冻笔新诗懒写，寒炉美酒时温。<br>醉看墨花月白，恍疑雪满前村。<br>—— 李白《立冬》",
+                desc: "立冬，是冬季的第一个节气，代表着冬季的开始。立冬是季节类节气，与立春、立夏、立秋合称“四立”。立冬后，日照时间将继续缩短，正午太阳高度继续降低。立冬时节，北半球获得的太阳辐射量越来越少，但由于此时地表在下半年贮存的热量还没有完全散失，所以一般还不会太冷，但气温会逐渐下降。"
+            },
+            xiaoxue: {
+                title: "小雪",
+                three: "一候虹藏不见；<br>二候天气上升地气下降；<br>三候闭塞而成冬。",
+                poem: "小雪已晴芦叶暗，长波乍急鹤声嘶。<br>孤舟一夜宿流水，眼看山头月落溪。<br>—— 陈羽《夜泊荆溪》",
+                desc: "小雪，是冬季第二个节气。小雪是反映降水与气温的节气，它是寒潮和强冷空气活动频数较高的节气。小雪节气的到来，意味着天气会越来越冷、降水量渐增。“小雪”是个比喻，反映的是这个节气期间寒流活跃、降水渐增，不是表示这个节气下很小量的雪。"
+            },
+            daxue: {
+                title: "大雪",
+                three: "一候鹖鴠不鸣；<br>二候虎始交；<br>三候荔挺出。",
+                poem: "大雪江南见未曾，今年方始是严凝。<br>巧穿帘罅如相觅，重压林梢欲不胜。<br>—— 陆游《大雪》",
+                desc: "大雪，是冬季第三个节气。大雪节气的特点是气温显著下降、降水量增多。大雪节气与小雪节气一样，都是反映气温和降水变化趋势的节气，它是古代农耕文化对于节令的反映。大雪时节，中国大部分地区已进入冬季，最低温度都降到了0℃或以下，在强冷空气前沿冷暖空气交锋的地区，会降大雪，甚至暴雪。"
+            },
+            dongzhi: {
+                title: "冬至",
+                three: "一候蚯蚓结；<br>二候麋角解；<br>三候水泉动。",
+                poem: "邯郸驿里逢冬至，抱膝灯前影伴身。<br>想得家中夜深坐，还应说着远行人。<br>—— 白居易《邯郸冬至夜思家》",
+                desc: "冬至，是冬季第四个节气。冬至是太阳直射点南行的极致，这天太阳光直射南回归线，太阳光对北半球最为倾斜，太阳高度角最小，是北半球各地白昼最短、黑夜最长的一天。冬至也是中国民间的传统祭祖节日，在中国南方地区，有冬至祭祖、宴饮的习俗；在中国北方地区，每年冬至日有吃饺子的习俗。"
+            },
+            xiaohan: {
+                title: "小寒",
+                three: "一候雁北乡；<br>二候鹊始巢；<br>三候雉始鸲。",
+                poem: "小寒连大吕，欢鹊垒新巢。<br>拾食寻河曲，衔紫绕树梢。<br>—— 元稹《小寒十二月节》",
+                desc: "小寒，是冬季第五个节气。小寒节气的特点是寒冷，但还未到极点。小寒的天气特点是：天渐寒，尚未大冷。俗话有讲：“冷在三九”，由于隆冬“三九”也基本上处于小寒节气内，因此有“小寒胜大寒”之讲法。"
+            },
+            dahan: {
+                title: "大寒",
+                three: "一候鸡乳；<br>二候征鸟厉疾；<br>三候水泽腹坚。",
+                poem: "旧雪未及消，新雪又拥户。<br>阶前冻银床，檐头冰钟乳。<br>—— 邵雍《大寒吟》",
+                desc: "大寒，是冬季最后一个节气。大寒同小寒一样，也是表示天气寒冷程度的节气，大寒是天气寒冷到极致的意思。大寒节气处在三九、四九时段，此时寒潮南下频繁，是一年中的最寒冷时节。大寒在岁终，冬去春来，大寒一过，又开始新的一个轮回。"
+            }
+        };
+
+        // 节气卡片点击弹出详情
+        const termCards = document.querySelectorAll('.term-card');
+        const modal = document.getElementById('termModal');
+        const modalClose = document.getElementById('modalClose');
+        const modalTitle = document.getElementById('modalTitle');
+        const modalThree = document.getElementById('modalThree');
+        const modalPoem = document.getElementById('modalPoem');
+        const modalDesc = document.getElementById('modalDesc');
+
+        termCards.forEach(card => {
+            card.addEventListener('click', () => {
+                const termKey = card.dataset.term;
+                const data = termData[termKey];
+                
+                if (data) {
+                    modalTitle.textContent = data.title;
+                    modalThree.innerHTML = data.three;
+                    modalPoem.innerHTML = data.poem;
+                    modalDesc.textContent = data.desc;
+                    
+                    modal.classList.add('show');
+                    document.body.style.overflow = 'hidden';
+                }
+            });
+        });
+
+        // 关闭弹出层
+        modalClose.addEventListener('click', () => {
+            modal.classList.remove('show');
+            document.body.style.overflow = 'auto';
+        });
+
+        // 点击弹窗外区域关闭
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // 滑动按钮功能
+        const solarTerms = document.getElementById('terms');
+        const scrollLeftBtn = document.getElementById('scrollLeft');
+        const scrollRightBtn = document.getElementById('scrollRight');
+        
+        // 每次滑动的距离（一个卡片的宽度加上间距）
+        const cardWidth = 240; // 卡片宽度
+        const gap = 32; // 卡片间距
+        const scrollAmount = cardWidth + gap; // 每次滑动的距离
+        
+        // 更新按钮状态
+        function updateScrollButtons() {
+            const scrollLeft = solarTerms.scrollLeft;
+            const scrollWidth = solarTerms.scrollWidth;
+            const clientWidth = solarTerms.clientWidth;
+            
+            // 左侧按钮状态
+            if (scrollLeft <= 0) {
+                scrollLeftBtn.classList.add('disabled');
+            } else {
+                scrollLeftBtn.classList.remove('disabled');
+            }
+            
+            // 右侧按钮状态
+            if (scrollLeft + clientWidth >= scrollWidth - 5) { // 减5是为了处理小数误差
+                scrollRightBtn.classList.add('disabled');
+            } else {
+                scrollRightBtn.classList.remove('disabled');
+            }
+        }
+        
+        // 左滑按钮点击事件
+        scrollLeftBtn.addEventListener('click', () => {
+            if (!scrollLeftBtn.classList.contains('disabled')) {
+                solarTerms.scrollBy({
+                    left: -scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        });
+        
+        // 右滑按钮点击事件
+        scrollRightBtn.addEventListener('click', () => {
+            if (!scrollRightBtn.classList.contains('disabled')) {
+                solarTerms.scrollBy({
+                    left: scrollAmount,
+                    behavior: 'smooth'
+                });
+            }
+        });
+        
+        // 监听滚动事件，更新按钮状态
+        solarTerms.addEventListener('scroll', updateScrollButtons);
+        
+        // 页面加载时初始化按钮状态
+        window.addEventListener('load', updateScrollButtons);
+        window.addEventListener('resize', updateScrollButtons);
+        
+        // 鼠标滚轮滑动支持
+        let isScrolling = false;
+        solarTerms.addEventListener('wheel', (e) => {
+            if (isScrolling) return;
+            
+            isScrolling = true;
+            e.preventDefault();
+            
+            if (e.deltaY > 0) {
+                // 向下滚轮时向右滑动
+                solarTerms.scrollBy({
+                    left: scrollAmount * 0.8,
+                    behavior: 'smooth'
+                });
+            } else {
+                // 向上滚轮时向左滑动
+                solarTerms.scrollBy({
+                    left: -scrollAmount * 0.8,
+                    behavior: 'smooth'
+                });
+            }
+            
+            setTimeout(() => {
+                isScrolling = false;
+            }, 300);
+        });
+    </script>
+</body>
+</html>
