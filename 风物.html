@@ -1,0 +1,1166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.bootcdn.net/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Ma+Shan+Zheng&family=Noto+Serif+SC:wght@400;600&display=swap"
+        rel="stylesheet">
+    <title>二十四节气 - 郑州风物篇</title>
+    <style>
+        /* 全局重置与基础样式 */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Ma Shan Zheng', cursive;
+            font-weight: normal;
+            font-size: 20px;
+        }
+
+        body {
+            background:
+                url("../statics/副背景.png") center/cover no-repeat,
+                linear-gradient(180deg, rgba(250, 245, 240, 0.85), rgba(245, 240, 235, 0.9));
+            background-attachment: fixed;
+            color: #333;
+            overflow-x: hidden;
+            scroll-behavior: smooth;
+        }
+
+        /* ========== 隐藏页面滚动条 ========== */
+        html {
+            height: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow-y: auto;
+            overflow-x: hidden;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        body::-webkit-scrollbar {
+            width: 0 !important;
+            height: 0 !important;
+            display: none !important;
+        }
+
+        body::-webkit-scrollbar-thumb {
+            background: transparent !important;
+        }
+
+        body::-webkit-scrollbar-track {
+            background: transparent !important;
+        }
+
+        /* 首屏 Hero 区 */
+        .hero {
+            width: 100vw;
+            min-height: 100vh;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background:
+                url("../statics/副背景.png") center/cover no-repeat,
+                linear-gradient(180deg, rgba(250, 245, 240, 0.85), rgba(245, 240, 235, 0.9));
+            background-attachment: fixed;
+        }
+
+        .hero::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                repeating-linear-gradient(0deg,
+                    transparent,
+                    transparent 2px,
+                    rgba(220, 200, 180, 0.02) 2px,
+                    rgba(220, 200, 180, 0.02) 4px);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .hero-title {
+            font-size: clamp(3rem, 8vw, 6rem);
+            font-weight: 300;
+            letter-spacing: 0.2em;
+            color: #444;
+            margin-bottom: 1rem;
+            position: relative;
+            z-index: 2;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #777;
+            letter-spacing: 0.1em;
+            opacity: 0.8;
+            position: relative;
+            z-index: 2;
+        }
+
+        .scroll-down {
+            position: absolute;
+            bottom: 3rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 24px;
+            height: 40px;
+            border: 1px solid #999;
+            border-radius: 12px;
+            z-index: 2;
+            opacity: 0.7;
+            animation: breathe 3s infinite ease-in-out;
+            cursor: pointer;
+        }
+
+        .scroll-down::after {
+            content: "";
+            position: absolute;
+            top: 8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 4px;
+            height: 8px;
+            background-color: #999;
+            border-radius: 2px;
+            animation: scroll 2s infinite ease-in-out;
+        }
+
+        @keyframes breathe {
+
+            0%,
+            100% {
+                opacity: 0.5;
+            }
+
+            50% {
+                opacity: 0.8;
+            }
+        }
+
+        @keyframes scroll {
+            0% {
+                transform: translate(-50%, 0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translate(-50%, 20px);
+                opacity: 0;
+            }
+        }
+
+        /* 导航栏 */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 4rem;
+            padding: 1.5rem 0;
+            background: rgba(255, 255, 255, 0.8);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-100%);
+            transition: all 0.5s ease;
+        }
+
+        .navbar.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.95);
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar a {
+            text-decoration: none;
+            color: #555;
+            font-size: 1rem;
+            letter-spacing: 0.1em;
+            transition: color 0.3s ease;
+            position: relative;
+            cursor: pointer;
+        }
+
+        .navbar a::after {
+            content: "";
+            position: absolute;
+            bottom: -4px;
+            left: 0;
+            width: 0;
+            height: 1px;
+            background-color: #777;
+            transition: width 0.3s ease;
+        }
+
+        .navbar a:hover {
+            color: #333;
+        }
+
+        .navbar a:hover::after {
+            width: 100%;
+        }
+
+        /* 主标题 */
+        .main-title {
+            font-size: clamp(1.8rem, 4vw, 3rem);
+            color: #444;
+            letter-spacing: 0.1em;
+    
+            text-align: center;
+            position: relative;
+            padding-top: 0.5rem;
+        }
+
+
+        /* 分类导航 */
+        .category-nav {
+            z-index: 990;
+            padding: 1.5rem 0;
+            margin: 0 auto 4px;
+            width: 100%;
+            max-width: 1000px;
+        }
+
+        .category-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 5rem;
+        }
+
+        .category-tab {
+            background: none;
+            border: none;
+            font-size: 1.2rem;
+            color: #888;
+            cursor: pointer;
+            padding: 0.5rem 0;
+            position: relative;
+            transition: all 0.3s ease;
+            font-family: 'Ma Shan Zheng', cursive;
+            letter-spacing: 0.3em;
+        }
+
+        .category-tab:hover {
+            color: #666;
+        }
+
+        .category-tab.active {
+            color: #333;
+        }
+
+        .category-tab.active::after {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            animation: underlineAppear 0.3s ease-out;
+        }
+
+        .category-tab:nth-child(1).active {
+            color: #2e7d63;
+        }
+
+        .category-tab:nth-child(1).active::after {
+            background: linear-gradient(90deg, #2e7d63, rgba(46, 125, 99, 0.3));
+        }
+
+        .category-tab:nth-child(2).active {
+            color: #d84315;
+        }
+
+        .category-tab:nth-child(2).active::after {
+            background: linear-gradient(90deg, #d84315, rgba(216, 67, 21, 0.3));
+        }
+
+        .category-tab:nth-child(3).active {
+            color: #6a1b9a;
+        }
+
+        .category-tab:nth-child(3).active::after {
+            background: linear-gradient(90deg, #6a1b9a, rgba(106, 27, 154, 0.3));
+        }
+
+        @keyframes underlineAppear {
+            from {
+                width: 0;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        /* 圆盘区域容器 */
+        .circle-section {
+            display: none;
+            padding: 2px 5vw;
+            max-width: 1600px;
+            margin: 0 auto; 
+            width: 100%;  
+            text-align: center;
+        }
+
+        .circle-section.active {
+            display: block;
+            animation: fadeIn 0.6s ease forwards;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 圆盘容器 */
+        .circle-container {
+            position: relative;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            perspective: 1000px;
+        }
+
+        /* 圆盘包装 */
+        .circle-wrapper {
+            position: relative;
+            width: 730px;
+            height: 730px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        /* 外环 */
+        .circle-border {
+            position: absolute;
+            width: calc(100% - 40px);
+            height: calc(100% - 40px);
+            border-radius: 50%;
+            border: 2px solid transparent;
+            background:
+                linear-gradient(135deg, #fdf9f3 0%) padding-box,
+                conic-gradient(from 0deg,
+                    var(--spring-color) 0deg 90deg,
+                    var(--summer-color) 90deg 180deg,
+                    var(--autumn-color) 180deg 270deg,
+                    var(--winter-color) 270deg 360deg) border-box;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+            animation: rotateBorder 30s linear infinite;
+        }
+
+        @keyframes rotateBorder {
+            0% {
+                transform: rotate(0deg);
+            }
+
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+
+        /* 内环 */
+        .inner-circle {
+            width: 470px;
+            height: 490px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 60% 30%, #f8f9fa, #e9ecef);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            box-shadow:
+                0 25px 60px rgba(0, 0, 0, 0.12),
+                inset 0 -12px 30px rgba(0, 0, 0, 0.06);
+            border: 3.5px solid #d4bfa7;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+            z-index: 2;
+            padding: 40px;
+        }
+
+        /* 中心内容 */
+        .center-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.5s ease;
+        }
+
+        .center-content.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .center-title {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 3rem;
+            color: #4f733f;
+            text-align: center;
+            margin: 0 0 20px 0;
+            padding: 0;
+            position: relative;
+            z-index: 5;
+            letter-spacing: 0.2em;
+            text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .center-date {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1rem;
+            color: #666;
+            margin-bottom: 30px;
+            font-weight: 500;
+            letter-spacing: 0.3em;
+            opacity: 0.9;
+        }
+
+        .center-desc {
+            font-family: 'Ma Shan Zheng', cursive;
+            font-size: 1.2rem;
+            color: #444;
+            font-weight: 500;
+            line-height: 1.6;
+            max-width: 90%;
+            padding: 0 15px;
+            opacity: 0.9;
+            letter-spacing: 0.1em;
+        }
+
+        .term-description {
+            font-size: 1.2rem;
+            color: #666;
+            font-weight: 400;
+            height: 30px;
+            margin-top: 10px;
+            opacity: 0;
+            transition: opacity 0.6s ease;
+            font-family: 'Ma Shan Zheng', serif;
+            text-align: center;
+            letter-spacing: 1px;
+            max-width: 80%;
+        }
+
+        .solar-terms {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+        }
+
+        /* 节气点 */
+        .term {
+            position: absolute;
+            width: 75px;
+            height: 75px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 20px;
+            font-weight: 500;
+            color: #444;
+            font-family: 'Ma Shan Zheng', serif;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+            transform-origin: center;
+            text-shadow: 0 1px 3px rgba(255, 255, 255, 0.8);
+            letter-spacing: 1px;
+            z-index: 4;
+        }
+
+        .term:hover {
+            color: #91b3d8;
+            transform: scale(1.3);
+            font-weight: 600;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .term.active {
+            color: #d8c7b8;
+            font-weight: 700;
+            transform: scale(1.4);
+            text-shadow: 0 0 10px rgba(216, 199, 184, 0.5);
+        }
+
+        /* 季节标记 */
+        .season-mark {
+            position: absolute;
+            font-size: 42px;
+            font-weight: 600;
+            color: #fff;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 3;
+            font-family: 'Ma Shan Zheng', cursive;
+            box-shadow:
+                0 8px 20px rgba(0, 0, 0, 0.2),
+                inset 0 4px 10px rgba(255, 255, 255, 0.4),
+                inset 0 -4px 10px rgba(0, 0, 0, 0.1);
+            transition: all 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+            border: 3px solid rgba(255, 255, 255, 0.5);
+            backdrop-filter: blur(3px);
+        }
+
+        .season-mark:hover {
+            transform: scale(1.2) rotate(10deg);
+            box-shadow:
+                0 12px 25px rgba(0, 0, 0, 0.25),
+                inset 0 6px 12px rgba(255, 255, 255, 0.5),
+                inset 0 -6px 12px rgba(0, 0, 0, 0.2);
+        }
+
+        /* 移除悬停变色圆圈 */
+        .category-wuhou .term:hover,
+        .category-wuhou .term.active,
+        .category-fengsu .term:hover,
+        .category-fengsu .term.active,
+        .category-shisu .term:hover,
+        .category-shisu .term.active {
+            background: transparent !important;
+        }
+
+        /* 季节标记背景颜色透明度调整 */
+        .spring {
+            background: rgba(129, 177, 132, 0.5);
+        }
+
+        .summer {
+            background: rgb(236, 170, 131);
+        }
+
+        .autumn {
+            background: rgba(192, 139, 115, 0.5);
+        }
+
+        .winter {
+            background: rgba(138, 180, 201, 0.5);
+        }
+
+        /* 最外环的颜色与"春""夏""秋""冬"的颜色保持一致 */
+        .category-wuhou .circle-border,
+        .category-fengsu .circle-border,
+        .category-shisu .circle-border {
+            --spring-color: rgba(129, 177, 132, 0.85);
+            --summer-color: rgba(217, 180, 143, 0.85);
+            --autumn-color: rgba(192, 139, 115, 0.85);
+            --winter-color: rgba(138, 180, 201, 0.85);
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 900px) {
+            .circle-wrapper {
+                width: 450px;
+                height: 450px;
+            }
+
+            .inner-circle {
+                width: 280px;
+                height: 280px;
+            }
+
+            .circle-border {
+                width: calc(100% - 20px);
+                height: calc(100% - 20px);
+            }
+
+            .center-title {
+                font-size: 2.6rem;
+            }
+
+            .center-date {
+                font-size: 1rem;
+            }
+
+            .center-desc {
+                font-size: 1.2rem;
+            }
+
+            .term {
+                width: 60px;
+                height: 60px;
+                font-size: 16px;
+            }
+
+            .season-mark {
+                width: 60px;
+                height: 60px;
+                font-size: 30px;
+            }
+
+            .navbar {
+                gap: 2rem;
+                padding: 1rem 0;
+            }
+
+            .category-tabs {
+                gap: 3rem;
+            }
+
+            .category-tab {
+                font-size: 1rem;
+                letter-spacing: 0.1em;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .circle-wrapper {
+                width: 350px;
+                height: 350px;
+            }
+
+            .inner-circle {
+                width: 220px;
+                height: 220px;
+            }
+
+            .center-title {
+                font-size: 2rem;
+            }
+
+            .category-nav {
+                top: 60px;
+            }
+
+            .category-tabs {
+                gap: 1rem;
+            }
+
+            .category-tab {
+                font-size: 0.9rem;
+                letter-spacing: 0.1em;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .circle-wrapper {
+                width: 300px;
+                height: 300px;
+            }
+
+            .inner-circle {
+                width: 180px;
+                height: 180px;
+                padding: 20px;
+            }
+
+            .center-title {
+                font-size: 1.6rem;
+            }
+
+            .center-date {
+                font-size: 0.9rem;
+            }
+
+            .center-desc {
+                font-size: 1rem;
+            }
+
+            .navbar {
+                gap: 1.2rem;
+            }
+
+            .season-mark {
+                width: 50px;
+                height: 50px;
+                font-size: 24px;
+            }
+
+            .term {
+                width: 50px;
+                height: 50px;
+                font-size: 14px;
+            }
+        }
+
+        .glass-container {
+            padding: 6rem 2rem 0;
+            max-width: 100%; /* 修正 auto 为 100%，避免宽度异常 */
+            margin: 0 auto;
+            position: relative;
+            background: rgba(255, 255, 255, 0.4); 
+            backdrop-filter: blur(10px); /* 增强模糊效果，更明显 */
+            -webkit-backdrop-filter: blur(10px); /* 兼容Safari */
+            border-top: 1px solid rgba(255, 255, 255, 0.6); /* 增强边框对比 */
+            box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.08);
+            border-radius: 20px 20px 0 0;
+            z-index: 10;
+            position: relative;
+            margin-top: -1px;
+            /* 新增：确保容器高度足够，覆盖下方内容 */
+            min-height: calc(100vh - 200px); 
+        }
+
+        /* 装饰性边框 - 微调 */
+        .glass-container::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            border: 1px solid rgba(255, 255, 255, 0.5); /* 增强边框透明度 */
+            border-bottom: none;
+            border-radius: 20px 20px 0 0;
+            pointer-events: none;
+            z-index: -1; /* 调整层级，避免遮挡背景 */
+        }
+    </style>
+</head>
+
+<body>
+    <section class="hero">
+        <h1 class="hero-title">郑州风物</h1>
+        <p class="hero-subtitle">中原物候，管城风俗，商都食味</p>
+        <div class="scroll-down"></div>
+    </section>
+
+    <nav class="navbar">
+        <a onclick="window.location.href='主页面.html'">节气</a>
+        <a onclick="window.location.href='历史渊源.html'">渊源</a>
+        <a onclick="window.location.href='节侯.html'">节侯</a>
+        <a onclick="window.location.href='风物.html'">风物</a>
+        <a onclick="window.location.href='问答.html'">问答</a>
+        <a onclick="window.location.href='传承.html'">传承</a>
+    </nav>
+    <div class="glass-container">
+        <h2 class="main-title">郑州二十四节气风物志</h2>
+
+        <div class="category-nav">
+            <div class="category-tabs">
+                <button class="category-tab active" data-category="wuhou">物候</button>
+                <button class="category-tab" data-category="fengsu">风俗</button>
+                <button class="category-tab" data-category="shisu">食俗</button>
+            </div>
+        </div>
+
+        <section id="wuhou" class="circle-section category-wuhou active">
+            <div class="circle-container">
+                <div class="circle-wrapper">
+                    <div class="circle-border"></div>
+
+                    <div class="solar-terms" id="wuhou-terms"></div>
+
+                    <div class="season-mark spring" style="top: 11%; left: 50%; transform: translateX(-50%);">春</div>
+                    <div class="season-mark summer" style="top: 50%; right: 13%; transform: translateY(-50%);">夏</div>
+                    <div class="season-mark autumn" style="bottom: 11%; left: 50%; transform: translateX(-50%);">秋</div>
+                    <div class="season-mark winter" style="top: 50%; left: 13%; transform: translateY(-50%);">冬</div>
+
+                    <div class="inner-circle">
+                        <div class="center-content" id="wuhou-center">
+                            <h3 class="center-title" id="wuhou-center-title">物候</h3>
+                            <div class="center-date" id="wuhou-center-date"></div>
+                            <div class="center-desc" id="wuhou-center-desc"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="fengsu" class="circle-section category-fengsu">
+            <div class="circle-container">
+                <div class="circle-wrapper">
+                    <div class="circle-border"></div>
+
+                    <div class="solar-terms" id="fengsu-terms"></div>
+
+                    <div class="season-mark spring" style="top: 11%; left: 50%; transform: translateX(-50%);">春</div>
+                    <div class="season-mark summer" style="top: 50%; right: 13%; transform: translateY(-50%);">夏</div>
+                    <div class="season-mark autumn" style="bottom: 11%; left: 50%; transform: translateX(-50%);">秋</div>
+                    <div class="season-mark winter" style="top: 50%; left: 13%; transform: translateY(-50%);">冬</div>
+
+                    <div class="inner-circle">
+                        <div class="center-content" id="fengsu-center">
+                            <h3 class="center-title" id="fengsu-center-title">风俗</h3>
+                            <div class="center-date" id="fengsu-center-date"></div>
+                            <div class="center-desc" id="fengsu-center-desc"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="shisu" class="circle-section category-shisu">
+            <div class="circle-container">
+                <div class="circle-wrapper">
+                    <div class="circle-border"></div>
+
+                    <div class="solar-terms" id="shisu-terms"></div>
+
+                    <div class="season-mark spring" style="top: 11%; left: 50%; transform: translateX(-50%);">春</div>
+                    <div class="season-mark summer" style="top: 50%; right: 13%; transform: translateY(-50%);">夏</div>
+                    <div class="season-mark autumn" style="bottom: 11%; left: 50%; transform: translateX(-50%);">秋</div>
+                    <div class="season-mark winter" style="top: 50%; left: 13%; transform: translateY(-50%);">冬</div>
+
+                    <div class="inner-circle">
+                        <div class="center-content" id="shisu-center">
+                            <h3 class="center-title" id="shisu-center-title">食俗</h3>
+                            <div class="center-date" id="shisu-center-date"></div>
+                            <div class="center-desc" id="shisu-center-desc"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </div>
+    <script>
+        const navbar = document.querySelector('.navbar');
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 100) {
+                navbar.classList.add('show');
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('show');
+                navbar.classList.remove('scrolled');
+            }
+        });
+
+        const solarTerms = [
+            "立春", "雨水", "惊蛰", "春分", "清明", "谷雨",
+            "立夏", "小满", "芒种", "夏至", "小暑", "大暑",
+            "立秋", "处暑", "白露", "秋分", "寒露", "霜降",
+            "立冬", "小雪", "大雪", "冬至", "小寒", "大寒"
+        ];
+
+        const solarTermDates = [
+            "2月3-5日", "2月18-20日", "3月5-7日", "3月20-22日", "4月4-6日", "4月19-21日",
+            "5月5-7日", "5月20-22日", "6月5-7日", "6月21-22日", "7月6-8日", "7月22-24日",
+            "8月7-9日", "8月22-24日", "9月7-9日", "9月22-24日", "10月8-9日", "10月23-24日",
+            "11月7-8日", "11月22-23日", "12月6-8日", "12月21-23日", "1月5-7日", "1月20-21日"
+        ];
+
+        const wuhouData = [
+            "残雪消融、表层土壤解冻，腊梅仍有余香，无持续严寒。",
+            "冬小麦全面返青，迎春、连翘次第绽放，土壤墒情回升。",
+            "冻土完全化开，春雷始鸣、蛰虫苏醒，杨柳、国槐等落叶乔木集中萌芽，杏花、桃花初绽。",
+            "杨柳抽絮、桃李盛放，小麦进入拔节期，气温稳定回升，少有极端倒春寒。",
+            "泡桐花全域盛开，梨花、海棠进入盛花期，嵩山沿线草木全面返绿。",
+            "邙山牡丹进入盛花期，小麦进入孕穗期，春雨增多、寒潮彻底终结，香椿、春笋等春芽集中上市。",
+            "石榴花、月季盛放，冬小麦进入抽穗扬花期，气温快速攀升，雷雨天气增多。",
+            "冬小麦籽粒灌浆饱满、即将成熟，合欢花盛放，气温稳定在30℃左右，降水逐步增多。",
+            "进入“三夏”大忙高峰，冬小麦集中收割，夏玉米、大豆集中播种，荷花初绽，蝉鸣始起。",
+            "蝉鸣鼎盛，荷花进入盛花期，半夏生，白昼时长达到全年峰值，进入主汛期。",
+            "入伏，高温高湿天气成为常态，玉米拔节生长，西瓜、桃子等夏令瓜果集中成熟。",
+            "全年气温最高、降雨最集中的时段，极端高温频发，秋作物进入快速生长期，紫薇花盛放。",
+            "暑气未消，多有“秋老虎”，玉米、大豆进入灌浆成熟期，桂花初绽，气温缓慢下降。",
+            "暑气彻底消退，秋高气爽特征显现，玉米、水稻成熟，秋收启动，荷叶渐残，蝉鸣噤声。",
+            "温差达到全年峰值，桂花全域盛放，满城桂香，晨露凝白，秋收全面铺开，国槐、杨树叶片开始泛黄。",
+            "秋收进入高峰，玉米、大豆、花生集中收割，冬小麦整地备播，银杏、黄栌叶片逐步变色，菊花初绽。",
+            "气温快速下降，嵩山红叶进入盛花期，是郑州秋季核心物候景观，菊花盛放，落叶乔木叶片大面积泛黄。",
+            "出现初霜，落叶乔木集中落叶，冬小麦播种完成、出苗生长，菊花进入盛花期，柿子完全成熟。",
+            "正式入冬，气温骤降，水面开始结冰，冬小麦进入越冬期，落叶乔木叶片基本落尽。",
+            "气温降至0℃以下，出现初雪，积雪难存，万物闭藏，腊梅初绽。",
+            "气温持续走低，强降雪天气增多，积雪可留存，水面冰封加厚，腊梅进入盛花期。",
+            "进入数九寒天，白昼时长达到全年最短，气温持续走低，腊梅盛放。",
+            "全年最冷的时段，“三九四九冰上走”特征显著，河面完全冰封，强寒潮、降雪天气集中。",
+            "全年最冷的时段，万物闭藏，冬小麦安全越冬，年味渐浓。"
+        ];
+
+        const fengsuData = [
+            "登封观星台立春非遗主题活动（复原圭表测影仪式）、鞭春牛、说春巡游、贴宜春帖、咬春。",
+            "出嫁女儿回娘家，晚辈给父母送罐罐肉等节礼祈寿。",
+            "祭雷神、炒虫驱虫的民间习俗，农区会在田间焚香祈愿虫害远离。",
+            "举办竖蛋大赛、祭日神仪式，传承中原'春分祭日'古礼，登封观星台会举办春分日影观测科普活动。",
+            "新郑黄帝故里拜祖大典（国家级非遗民俗）、扫墓祭祖、踏青插柳、放风筝、'清明嫁九娘'的民间趋吉习俗。",
+            "祭仓圣、祈雨防旱的民俗，农区举办祭龙王仪式，邙山沿线有谷雨赏牡丹、采谷雨茶的民间活动。",
+            "“尝三新”、斗蛋的民俗，郑州民间'三新'特指新麦、樱桃、蒜薹，孩童会举办斗蛋大赛。",
+            "中牟、新郑、荥阳等集镇会举办3-5天的小满会（物资交流大会），同时保留祭车神、祭麦神的古俗。",
+            "祭麦神、尝新麦、送花神的民俗，麦收结束后用新麦磨面做馍祭祀麦神。",
+            "传承中原'夏至祭地'古礼，民间有祭祖、晒秋粮的习俗，登封观星台会举办夏至天文科普活动。",
+            "入伏后严格遵循'头伏饺子二伏面，三伏烙饼摊鸡蛋'的中原民俗，民间有伏天晒伏、黄河沿线避暑纳凉的传统。",
+            "祭龙王、祈雨防涝的民俗，同步举办伏羊节，喝羊肉汤发汗祛湿。",
+            "“贴秋膘、啃秋”的民俗，民间炖肉进补，同时啃西瓜、秋桃，寓意送走暑气、迎接秋凉。",
+            "祭祖、迎秋的民俗，农户用新收的作物祭祖，感谢先祖庇佑丰收，同步举办处暑物资交流会。",
+            "酿白露米酒、祭月神、赏桂花的民俗，民间用新收糯米酿白露酒，开启中秋祭月筹备。",
+            "传承中原'秋分祭月'古礼，郑州会举办大型丰收节庆活动，农区用新收五谷举办祭神农、祭谷神的仪式。",
+            "登高赏红叶的民俗，嵩山红叶节、长寿山红叶节是郑州秋季标志性文旅活动，同步有饮菊花酒的传统。",
+            "腌菜、备冬储、赏菊的民俗，民间在霜降前后腌萝卜、腌白菜、晒干货，同步举办菊展。",
+            "迎冬、补冬的民俗，传承中原“立冬补冬，补嘴空”的古训，民间举办家宴、炖肉进补。",
+            "腌菜、腌腊肉的民俗，遵循'小雪腌菜'的古训，为春节储备腊味。",
+            "腌腊肉、灌香肠的民俗，遵循'大雪腌肉'的古训，同时有“大雪扫雪”的邻里互助传统。",
+            "严格遵循“冬至祭天”古礼，民间祭祖、上坟，宗族举办冬至祭祖仪式，同时有数九、画九九消寒图的传统。",
+            "进入年俗筹备期，民间赶庙会、备年货、杀年猪，郑州城隍庙会、中原福塔庙会同步举办小年民俗活动。",
+            "年味拉满，民间严格遵循“二十三，糖瓜粘；二十四，扫房子”的年俗口诀，开展祭灶、扫尘、炸年货、贴春联等活动。"
+        ];
+
+        const shisuData = [
+            "春饼卷合菜、咬生萝卜（咬春），搭配河南特色韭黄、粉丝、豆芽合菜。",
+            "喝红枣小米粥、吃慢炖罐罐肉，贴合中原敬老传统。",
+            "炒黄豆、炒玉米（俗称“炒虫”），寓意吃掉害虫、全年五谷丰登，搭配凉拌荠菜等春菜。",
+            "吃春菜、手擀龙须面，以荠菜、白蒿等田间春菜凉拌或做馅，祈愿全年顺遂。",
+            "必吃中原特色子推馍（枣花馍）、馓子、煮鸡蛋，传承寒食古俗，搭配凉拌芥菜丝、香椿芽。",
+            "必吃香椿炒鸡蛋、蒜薹捞面，搭配新采的谷雨毛尖茶，民间有“谷雨吃椿，强身固本”的说法。",
+            "必吃新麦面做的蒜汁捞面、立夏蛋，搭配樱桃、新蒜薹尝鲜，民间有“立夏吃蛋，热天不疰夏”的俗语。",
+            "必吃麦仁粥、苦菜、油馍，用新灌浆的小麦做麦仁粥，搭配田间苦菜清热降火，油馍是农户麦收前补充体力的核心吃食。",
+            "必吃新麦馒头、新麦面，麦收结束后用第一茬新麦磨面做主食，搭配炒豆角、煎鸡蛋庆祝丰收。",
+            "必吃中原特色蒜汁凉面、荆芥拌黄瓜，严格遵循'冬至饺子夏至面'的古训，搭配绿豆汤解暑。",
+            "头伏吃河南特色扁食（饺子，多以羊肉、韭菜为馅），二伏吃捞面、凉面，三伏吃烙饼摊鸡蛋。",
+            "必喝河南特色羊肉汤、胡辣汤，民间有“伏天喝热汤，祛湿保健康”的说法，搭配西瓜、时令瓜果解暑。",
+            "必吃炖肉、八大碗扣碗贴秋膘，以河南特色红烧大肉为主，同时啃西瓜、秋桃“啃秋”。",
+            "必吃清炖老鸭汤、玉米糁粥，搭配新收的花生、毛豆，清热润燥，贴合中原“处暑送鸭，无病各家”的传统。",
+            "必吃桂花糕、喝白露米酒、吃石榴，搭配河南特色羊肉烩面，温补润燥。",
+            "必吃河南特色五仁月饼、团圆饭，以八大碗、扣碗为核心，搭配新收五谷做的主食，同步喝桂花酒、吃螃蟹。",
+            "必喝河南特色羊肉汤、吃柿子，搭配凉拌萝卜丝，温补御寒，应对气温骤降。",
+            "必吃柿子、柿饼，民间有“霜降吃柿子，不会流鼻涕”的俗语，同时腌制萝卜干、冬储白菜，搭配烩面、胡辣汤。",
+            "必吃河南特色扁食（饺子），多以羊肉、白菜为馅，同时炖羊肉、喝羊肉汤进补，民间有“立冬喝羊汤，冬天不冻伤”的俗语。",
+            "必吃腌萝卜干、腌白菜，搭配烩面、胡辣汤。",
+            "必吃腊肉、腊肠，大雪时节喝羊肉汤、吃杀猪菜，农户杀年猪后宴请邻里。",
+            "必吃饺子，是郑州冬季食俗的绝对核心，民间无论贫富，冬至必吃饺子，搭配羊肉汤、炸丸子。",
+            "必喝腊八粥，郑州民间的腊八粥以糯米、小米、红豆、花生、红枣等8种食材熬制，搭配腌制腊八蒜。",
+            "必吃祭灶糖、芝麻糖，贴合“二十三，糖瓜粘”的年俗，同时炸丸子、炸酥肉、蒸扣碗、蒸枣花馍，筹备春节年货。"
+        ];
+
+        // 修复初始化时机问题
+        function createSolarTermsCircle(containerId, data, category) {
+            const sectionId = containerId.split('-')[0];
+            const container = document.querySelector(`#${sectionId} .circle-wrapper`);
+            const termsContainer = document.getElementById(containerId);
+            const centerElement = document.getElementById(`${sectionId}-center`);
+            const titleElement = document.getElementById(`${sectionId}-center-title`);
+            const dateElement = document.getElementById(`${sectionId}-center-date`);
+            const descElement = document.getElementById(`${sectionId}-center-desc`);
+
+            if (!container || !termsContainer || !centerElement) {
+                return;
+            }
+
+            // 确保容器有正确的尺寸
+            if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+                console.log(`容器 ${containerId} 尺寸为0，延迟重试`);
+                setTimeout(() => createSolarTermsCircle(containerId, data, category), 100);
+                return;
+            }
+
+            // 调整半径以适应更大的圆环
+            const radius = 305;
+            const centerX = container.offsetWidth / 2;
+            const centerY = container.offsetHeight / 2;
+
+            termsContainer.innerHTML = '';
+
+            solarTerms.forEach((term, index) => {
+                const angle = (index * (360 / 24) - 90) * (Math.PI / 180);
+                const x = centerX + radius * Math.cos(angle);
+                const y = centerY + radius * Math.sin(angle);
+
+                const termElement = document.createElement('div');
+                termElement.className = 'term';
+                termElement.textContent = term;
+                termElement.dataset.date = solarTermDates[index];
+                termElement.dataset.desc = data[index];
+                termElement.dataset.index = index;
+                // 调整节气点位置偏移，从40px调整为37.5px（匹配75px尺寸）
+                termElement.style.left = `${x - 37.5}px`;
+                termElement.style.top = `${y - 37.5}px`;
+
+                // 根据季节设置不同颜色
+                if (index < 6) {
+                    termElement.style.color = '#2a4e3a';
+                } else if (index < 12) {
+                    termElement.style.color = '#5d5348';
+                } else if (index < 18) {
+                    termElement.style.color = '#6b4c3d';
+                } else {
+                    termElement.style.color = '#3a5e6d';
+                }
+
+                // 悬停事件
+                termElement.addEventListener('mouseover', function (e) {
+                    e.stopPropagation();
+
+                    document.querySelectorAll(`#${containerId} .term`).forEach(t => {
+                        t.classList.remove('active');
+                    });
+
+                    this.classList.add('active');
+
+                    // 更新中心显示内容
+                    titleElement.textContent = this.textContent;
+                    dateElement.textContent = `时间：${this.dataset.date}`;
+                    descElement.textContent = this.dataset.desc;
+
+                    centerElement.classList.add('show');
+                });
+
+                termElement.addEventListener('mouseout', function () {
+                    if (this.classList.contains('active')) {
+                        // 恢复显示初始内容
+                        titleElement.textContent = category === 'wuhou' ? '物候' :
+                            category === 'fengsu' ? '风俗' : '食俗';
+                        dateElement.textContent = '';
+                        descElement.textContent = '';
+                        centerElement.classList.add('show');
+                    }
+                });
+
+                termsContainer.appendChild(termElement);
+            });
+        }
+
+        function initCircles() {
+            // 添加延迟确保页面完全渲染
+            setTimeout(() => {
+                createSolarTermsCircle('wuhou-terms', wuhouData, 'wuhou');
+                createSolarTermsCircle('fengsu-terms', fengsuData, 'fengsu');
+                createSolarTermsCircle('shisu-terms', shisuData, 'shisu');
+
+                // 确保初始状态显示
+                ['wuhou', 'fengsu', 'shisu'].forEach(category => {
+                    const centerElement = document.getElementById(`${category}-center`);
+                    const titleElement = document.getElementById(`${category}-center-title`);
+                    const dateElement = document.getElementById(`${category}-center-date`);
+                    const descElement = document.getElementById(`${category}-center-desc`);
+
+                    if (centerElement && category === 'wuhou') { // 只显示当前活动的分类
+                        titleElement.textContent = category === 'wuhou' ? '物候' :
+                            category === 'fengsu' ? '风俗' : '食俗';
+                        dateElement.textContent = '';
+                        descElement.textContent = '';
+                        centerElement.classList.add('show');
+                    }
+                });
+            }, 300); // 300ms延迟确保CSS完全渲染
+        }
+
+        const categoryTabs = document.querySelectorAll('.category-tab');
+        const circleSections = document.querySelectorAll('.circle-section');
+
+        function switchCategory(category) {
+            categoryTabs.forEach(tab => {
+                tab.classList.remove('active');
+            });
+            document.querySelector(`[data-category="${category}"]`).classList.add('active');
+
+            circleSections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            const targetSection = document.getElementById(category);
+            targetSection.classList.add('active');
+
+            const centerElement = document.getElementById(`${category}-center`);
+            const titleElement = document.getElementById(`${category}-center-title`);
+            const dateElement = document.getElementById(`${category}-center-date`);
+            const descElement = document.getElementById(`${category}-center-desc`);
+
+            centerElement.classList.remove('show');
+            setTimeout(() => {
+                titleElement.textContent = category === 'wuhou' ? '物候' : category === 'fengsu' ? '风俗' : '食俗';
+                dateElement.textContent = '';
+                descElement.textContent = '';
+                centerElement.classList.add('show');
+            }, 300);
+
+            setTimeout(() => {
+                window.dispatchEvent(new Event('resize'));
+            }, 100);
+        }
+
+        categoryTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                switchCategory(tab.dataset.category);
+            });
+        });
+
+        // 添加防抖处理resize事件
+        let resizeTimer;
+        window.addEventListener('resize', function () {
+            clearTimeout(resizeTimer);
+            resizeTimer = setTimeout(() => {
+                createSolarTermsCircle('wuhou-terms', wuhouData, 'wuhou');
+                createSolarTermsCircle('fengsu-terms', fengsuData, 'fengsu');
+                createSolarTermsCircle('shisu-terms', shisuData, 'shisu');
+            }, 200);
+        });
+
+        // 主要修改：使用load事件替代DOMContentLoaded
+        window.addEventListener('load', () => {
+            // 页面完全加载后初始化
+            initCircles();
+
+            const wuhouCenter = document.getElementById('wuhou-center');
+            if (wuhouCenter) {
+                wuhouCenter.classList.add('show');
+            }
+        });
+
+        // 平滑滚动到内容区域
+        document.querySelector('.scroll-down').addEventListener('click', () => {
+            document.querySelector('.main-title').scrollIntoView({
+                behavior: 'smooth',
+                block: 'start'
+            });
+        });
+
+        // 页面加载完成后初始化
+        window.addEventListener('DOMContentLoaded', () => {
+            // 页面加载动画
+            setTimeout(() => {
+                document.body.style.transition = 'opacity 1s ease-in';
+                document.body.style.opacity = '1';
+
+                // Hero标题动画
+                const heroTitle = document.querySelector('.hero-title');
+                heroTitle.style.animation = 'none';
+                setTimeout(() => {
+                    heroTitle.style.animation = 'fadeIn 2s ease-out';
+                }, 100);
+            }, 100);
+        });
+
+        // 添加CSS动画
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+
+</html>
